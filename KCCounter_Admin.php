@@ -3,13 +3,13 @@
 
 class KCCounter_Admin extends KCCounter {
 
-	function __construct(){
+	public function __construct(){
 
 		parent::__construct();
 
-		// no access
-		if( ! $this->admin_access )
+		if( ! $this->admin_access ){
 			return;
+		}
 
 		require KCC_PATH . 'admin/admin-functions.php';
 
@@ -25,14 +25,14 @@ class KCCounter_Admin extends KCCounter {
 		include KCC_PATH . 'admin/mce/mce.php';
 	}
 
-	function upgrade(){
+	public function upgrade(){
 		require_once KCC_PATH . 'admin/upgrade.php';
 
 		kccount_upgrade_init();
 	}
 
 	# Ссылки на страницы статистики и настроек со страницы плагинов
-	function plugins_page_links( $actions ){
+	public function plugins_page_links( $actions ){
 
 		$actions[] = '<a href="admin.php?page=' . KCC_NAME . '&options">' . __( 'Settings', 'kama-clic-counter' ) . '</a>';
 		$actions[] = '<a href="admin.php?page=' . KCC_NAME . '">' . __( 'Statistics', 'kama-clic-counter' ) . '</a>';
@@ -42,13 +42,19 @@ class KCCounter_Admin extends KCCounter {
 
 	function admin_menu(){
 
-		if( ! $this->admin_access ) return; // just in case
+		// just in case
+		if( ! $this->admin_access ){
+			return;
+		}
 
 		// открываем для всех, сюда не должно доходить, если нет доступа!....
-		$hookname = add_options_page( 'Kama Click Counter', 'Kama Click Counter', 'read', KCC_NAME, [
-			$this,
-			'options_page_output',
-		] );
+		$hookname = add_options_page(
+			'Kama Click Counter',
+			'Kama Click Counter',
+			'read',
+			KCC_NAME,
+			[ $this, 'options_page_output' ]
+		);
 
 		add_action( "load-$hookname", [ $this, 'options_page_load' ] );
 	}
@@ -56,47 +62,54 @@ class KCCounter_Admin extends KCCounter {
 	function options_page_load(){
 
 		// just in case...
-		if( ! $this->admin_access )
+		if( ! $this->admin_access ){
 			return;
+		}
 
-		$_nonce = isset( $_REQUEST['_wpnonce'] ) ? $_REQUEST['_wpnonce'] : '';
+		$_nonce = $_REQUEST['_wpnonce'] ?? '';
 
 		// save_options
 		if( isset( $_POST['save_options'] ) ){
 
-			if( ! wp_verify_nonce( $_nonce, 'save_options' ) && check_admin_referer( 'save_options' ) )
+			if( ! wp_verify_nonce( $_nonce, 'save_options' ) && check_admin_referer( 'save_options' ) ){
 				return $this->msg = 'error: nonce failed';
+			}
 
 			$_POST = wp_unslash( $_POST );
 
 			// очистка
 			$opt = $this->get_def_options();
 			foreach( $opt as $key => & $val ){
-				$val = isset( $_POST[ $key ] ) ? $_POST[ $key ] : '';
+				$val = $_POST[ $key ] ?? '';
 
 				is_string( $val ) && $val = trim( $val );
 
 				if( $key === 'download_tpl' ){} // no sanitize... wp_kses($val, 'post');
 				elseif( $key === 'url_exclude_patterns' ){} // no sanitize...
-				elseif( is_array($val) )
+				elseif( is_array( $val ) ){
 					$val = array_map( 'sanitize_key', $val );
-				else
+				}
+				else{
 					$val = sanitize_key( $val );
+				}
 			}
 			unset( $val );
 
 			update_option( self::OPT_NAME, $opt );
 
-			if( $this->opt = get_option( self::OPT_NAME ) )
-				$this->msg = __('Settings updated.', 'kama-clic-counter');
-			else
-				$this->msg = __('Error: Failed to update the settings!', 'kama-clic-counter');
+			if( $this->opt = get_option( self::OPT_NAME ) ){
+				$this->msg = __( 'Settings updated.', 'kama-clic-counter' );
+			}
+			else{
+				$this->msg = __( 'Error: Failed to update the settings!', 'kama-clic-counter' );
+			}
 		}
 		// reset options
 		elseif( isset($_POST['reset']) ){
 
-			if( ! wp_verify_nonce( $_nonce, 'save_options' ) && check_admin_referer( 'save_options' ) )
+			if( ! wp_verify_nonce( $_nonce, 'save_options' ) && check_admin_referer( 'save_options' ) ){
 				return $this->msg = 'error: nonce failed';
+			}
 
 			$this->set_def_options();
 			$this->msg = __('Settings reseted to defaults', 'kama-clic-counter');
@@ -104,20 +117,25 @@ class KCCounter_Admin extends KCCounter {
 		// update_link
 		elseif( isset($_POST['update_link']) ){
 
-			if( ! wp_verify_nonce( $_nonce, 'update_link' ) && check_admin_referer( 'update_link' ) )
+			if( ! wp_verify_nonce( $_nonce, 'update_link' ) && check_admin_referer( 'update_link' ) ){
 				return $this->msg = 'error: nonce failed';
+			}
 
 			$data = wp_unslash( $_POST['up'] );
 			$id   = (int) $data['link_id'];
 
 			// очистка
 			foreach( $data as $key => & $val ){
-				if( is_string($val) ) $val = trim($val);
+				if( is_string( $val ) ){
+					$val = trim( $val );
+				}
 
-				if( $key === 'link_url' )
+				if( $key === 'link_url' ){
 					$val = KCCounter::del_http_protocol( strip_tags( $val ) );
-				else
-					$val = sanitize_text_field($val);
+				}
+				else{
+					$val = sanitize_text_field( $val );
+				}
 			}
 			unset( $val );
 
@@ -128,32 +146,38 @@ class KCCounter_Admin extends KCCounter {
 		// bulk_action delete_links
 		elseif( isset( $_POST['delete_link_id'] ) ){
 
-			if( ! wp_verify_nonce( $_nonce, 'bulk_action' ) && check_admin_referer( 'bulk_action' ) )
+			if( ! wp_verify_nonce( $_nonce, 'bulk_action' ) && check_admin_referer( 'bulk_action' ) ){
 				return $this->msg = 'error: nonce failed';
+			}
 
-			if( $this->delete_links( $_POST['delete_link_id'] ) )
+			if( $this->delete_links( $_POST['delete_link_id'] ) ){
 				$this->msg = __( 'Selected objects deleted', 'kama-clic-counter' );
-			else
+			}
+			else{
 				$this->msg = __( 'Nothing was deleted!', 'kama-clic-counter' );
+			}
 		}
 		// delete single link handler
 		elseif( isset( $_GET['delete_link'] ) ){
 
-			if( ! wp_verify_nonce( $_nonce, 'delete_link' ) )
+			if( ! wp_verify_nonce( $_nonce, 'delete_link' ) ){
 				return $this->msg = 'error: nonce failed';
+			}
 
-			if( $this->delete_links( $_GET['delete_link'] ) )
-				wp_redirect( remove_query_arg( array( 'delete_link', '_wpnonce') ) );
-			else
-				$this->msg = __('Nothing was deleted!', 'kama-clic-counter');
+			if( $this->delete_links( $_GET['delete_link'] ) ){
+				wp_redirect( remove_query_arg( [ 'delete_link', '_wpnonce' ] ) );
+			}
+			else{
+				$this->msg = __( 'Nothing was deleted!', 'kama-clic-counter' );
+			}
 		}
 	}
 
-	function admin_page_url(){
+	function admin_page_url() {
 		return admin_url( 'admin.php?page=' . KCC_NAME );
 	}
 
-	function options_page_output(){
+	public function options_page_output(){
 		include KCC_PATH . 'admin/options-page.php';
 	}
 
@@ -225,7 +249,7 @@ class KCCounter_Admin extends KCCounter {
 		return $wpdb->update( $wpdb->kcc_clicks, $new_data, [ 'attach_id' => $attach_id ] );
 	}
 
-	function activation(){
+	public function activation(){
 		global $wpdb;
 
 		$charset_collate  = (! empty( $wpdb->charset )) ? "DEFAULT CHARSET=$wpdb->charset" : '';

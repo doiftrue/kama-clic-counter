@@ -1,12 +1,12 @@
 <?php
 
-// Backward compatibility with -3.5.0 version
+// Backward compatibility with < 3.5.0 version
 
 add_action( 'plugins_loaded', 'kcc_backward_compatibility', 20 );
 
-function kcc_backward_compatibility(){
-	KCC::$inst = & KCCounter::$instance;
-	KCClick::$inst = & KCCounter::$instance;
+function kcc_backward_compatibility() {
+	KCC::$inst = KCCounter::instance();
+	KCClick::$inst = KCCounter::instance();
 }
 
 // version -3.5.0 - for class name KCC
@@ -20,19 +20,18 @@ if( ! class_exists( 'KCC' ) ){
 
 		static $inst;
 
-		public function __get( $name ){
-			if( property_exists( 'KCCounter', $name ) ){
-				return KCCounter()->$name;
-			}
+		/** @noinspection MagicMethodsValidityInspection */
+		public function __get( $name ) {
+			return property_exists( 'KCCounter', $name ) ? KCCounter()->$name : null;
 		}
 
-		public function __call( $name, $arguments ){
+		public function __call( $name, $arguments ) {
 			if( method_exists( 'KCCounter', $name ) ){
 				return KCCounter()->$name( $arguments );
 			}
 		}
 
-		public static function __callStatic( $name, $arguments ){
+		public static function __callStatic( $name, $arguments ) {
 			if( method_exists( 'KCCounter', $name ) ){
 				return KCCounter::$name( $arguments );
 			}
@@ -51,19 +50,20 @@ if( ! class_exists( 'KCClick' ) ){
 
 		static $inst;
 
-		public function __get( $name ){
+		/** @noinspection MagicMethodsValidityInspection */
+		public function __get( $name ) {
 			if( property_exists( 'KCCounter', $name ) ){
 				return KCCounter()->$name;
 			}
 		}
 
-		public function __call( $name, $arguments ){
+		public function __call( $name, $arguments ) {
 			if( method_exists( 'KCCounter', $name ) ){
 				return KCCounter()->$name( $arguments );
 			}
 		}
 
-		public static function __callStatic( $name, $arguments ){
+		public static function __callStatic( $name, $arguments ) {
 			if( method_exists( 'KCCounter', $name ) ){
 				return KCCounter::$name( $arguments );
 			}

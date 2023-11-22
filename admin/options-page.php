@@ -1,4 +1,4 @@
-<?php if( ! defined( 'ABSPATH' ) ) exit; // no direct access ?>
+<?php defined( 'ABSPATH' ) || exit; ?>
 
 <div class="wrap">
 
@@ -21,14 +21,13 @@
 
 <?php
 if( @ $this->msg ){
-	$is_error = preg_match('~error~i', $this->msg );
-	echo '<div id="message" class="'. ( $is_error ? 'error' : 'updated' ) .'"><p>'. $this->msg .'</p></div>';
+	$is_error = preg_match( '~error~i', $this->msg );
+	echo '<div id="message" class="' . ( $is_error ? 'error' : 'updated' ) . '"><p>' . $this->msg . '</p></div>';
 }
 
 
 ## Options page -------------------------------------
-if(0){}
-elseif( (@ $_GET['subpage'] === 'settings') && current_user_can('manage_options') ){
+if( ( @ $_GET['subpage'] === 'settings' ) && current_user_can( 'manage_options' ) ){
 	echo kcc_admin_menu();
 
 	$def = $this->get_def_options();
@@ -137,7 +136,6 @@ elseif( (@ $_GET['subpage'] === 'settings') && current_user_can('manage_options'
 	</form>
 	<?php
 }
-
 ## edit link ------
 elseif( $edit_link_id = intval(@ $_GET['edit_link']) ){
 	// мнею

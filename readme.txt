@@ -1,9 +1,8 @@
 === Plugin Name ===
 Stable tag: trunk
-Tested up to: 5.3.2
+Tested up to: 6.4.1
 Contributors: Tkama
 Tags: analytics, statistics, count, count clicks, clicks, counter, download, downloads, link, kama
-Requires at least: 3.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 

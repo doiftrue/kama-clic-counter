@@ -1,9 +1,9 @@
 <?php
 
 // доступные шоткоды в шаблонах ссылок
-function kcc_tpl_available_tags(){
+function kcc_tpl_available_tags() {
 
-	$array = array(
+	$array = [
 		__( 'Shortcodes that can be used in template:', 'kama-clic-counter' ),
 		__( '[icon_url] - URL to file icon', 'kama-clic-counter' ),
 		__( '[link_url] - URL to download', 'kama-clic-counter' ),
@@ -14,12 +14,12 @@ function kcc_tpl_available_tags(){
 		__( '[link_date:d.M.Y] - date in "d.M.Y"  format', 'kama-clic-counter' ),
 		__( '[link_description]', 'kama-clic-counter' ),
 		__( '[edit_link] - URL to edit link in admin', 'kama-clic-counter' ),
-	);
+	];
 
 	$out = '
 		<div style="font-size:90%;">
-			<div>'. implode('</div><div>', $array) .'</div>
+			<div>' . implode( '</div><div>', $array ) . '</div>
 		</div>';
 
-	return str_replace( array('[',']'), array('<code>[',']</code>'), $out );
+	return str_replace( [ '[', ']' ], [ '<code>[', ']</code>' ], $out );
 }

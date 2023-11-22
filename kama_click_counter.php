@@ -8,9 +8,10 @@
  *
  * Author: Kama
  * Author URI: https://wp-kama.com
- * Plugin URI: https://wp-kama.com/?p=77
+ * Plugin URI: https://wp-kama.com/77
  *
- * Requires PHP: 5.4
+ * Requires PHP: 7.0
+ * Requires at least: 3.6
  *
  * Version: 3.6.10
  */
@@ -22,23 +23,16 @@ define( 'KCC_PATH', plugin_dir_path( __FILE__ ) );
 define( 'KCC_URL', plugin_dir_url( __FILE__ ) );
 define( 'KCC_NAME', basename( KCC_PATH ) );
 
-require_once KCC_PATH . 'class-KCCounter.php';
-require_once KCC_PATH . 'class-KCCounter_Admin.php';
-require_once KCC_PATH . '_backward-compatibility.php';
+require_once KCC_PATH . 'KCCounter.php';
+require_once KCC_PATH . 'KCCounter_Admin.php';
+require_once KCC_PATH . 'legacy/backcompat.php';
 
 
-// init
-add_action( 'plugins_loaded', 'KCCounter_init' );
+register_activation_hook( __FILE__, [ KCCounter(), 'activation' ] );
 
+add_action( 'plugins_loaded', 'kccounter_init' );
 
-register_activation_hook( __FILE__, function(){
-	KCCounter()->activation();
-} );
-
-/**
- * Init the KCC plugin.
- */
-function KCCounter_init(){
+function kccounter_init() {
 	load_plugin_textdomain( 'kama-clic-counter', false, KCC_NAME . '/languages' );
 
 	KCCounter();
@@ -46,11 +40,9 @@ function KCCounter_init(){
 
 
 /**
- * Get main class instance.
- *
  * @return KCCounter|KCCounter_Admin
  */
-function KCCounter(){
+function KCCounter() {
 	return KCCounter::instance();
 }
 
