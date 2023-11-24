@@ -1,95 +1,103 @@
 <?php
 
-class KCCounter {
+namespace KamaClickCounter;
 
-	const OPT_NAME = 'kcc_options';
+class KCCounter {
 
 	const COUNT_KEY = 'kcccount';
 
 	const PID_KEY = 'kccpid';
 
+	/** @var Options */
 	public $opt;
+
+	/** @var KCCounter_Admin */
+	public $admin;
 
 	public static $q_symbol_alts = [
 		'?' => '__QUESTION__',
 		'&' => '__AMPERSAND__',
 	];
 
-	protected $admin_access;
+	public $admin_access;
 
 	public static function instance() {
 		static $instance;
 
-		$instance || $instance = is_admin() ? new KCCounter_Admin() : new self();
+		$instance || $instance = new self();
 
 		return $instance;
 	}
 
 	public function __construct(){
-		global $wpdb;
 
-		$this->opt = get_option( self::OPT_NAME, [] );
+		self::set_wpdb_tables();
 
-		// дополним недостающие
-		foreach( $this->get_def_options() as $name => $val ){
-			if( ! isset( $this->opt[ $name ] ) ){
-				$this->opt[ $name ] = $val;
-			}
+		$this->opt = new Options();
+	}
+
+	public function init() {
+
+		$this->set_admin_access();
+
+		if( is_admin() ){
+			$this->admin = new KCCounter_Admin( $this->opt );
+			$this->admin->init();
 		}
 
-		// access
-		// set it here in order to use in front
-		$this->admin_access = apply_filters( 'kcc_admin_access', null );
+		load_plugin_textdomain( 'kama-clic-counter', false, KCC_NAME . '/languages' );
 
-		if( $this->admin_access === null ){
-			$this->admin_access = current_user_can( 'manage_options' );
-
-			if( ! $this->admin_access && ! empty( $this->opt['access_roles'] ) ){
-
-				foreach( wp_get_current_user()->roles as $role ){
-
-					if( in_array( $role, (array) $this->opt['access_roles'], 1 ) ){
-						$this->admin_access = true;
-						break;
-					}
-				}
-			}
-		}
-
-		// set table name
-		$wpdb->tables[] = 'kcc_clicks';
-		$wpdb->kcc_clicks = $wpdb->prefix . 'kcc_clicks';
-
-		// локализация
-		//if( ($locale = get_locale()) && (substr($locale,0,3) !== 'en_') ) $res = load_textdomain('kcc', dirname(__FILE__) . '/lang/'. $locale . '.mo' );
-
-		// Рабочая часть
-		if( $this->opt['links_class'] ){
+		if( $this->opt->links_class ){
 			add_filter( 'the_content', [ $this, 'modify_links' ] );
 		}
 
 		// admin_bar
-		if( $this->opt['toolbar_item'] && $this->admin_access ){
+		if( $this->opt->toolbar_item && $this->admin_access ){
 			add_action( 'admin_bar_menu', [ $this, 'add_toolbar_menu' ], 90 );
 		}
 
 		add_action( 'wp_footer', [ $this, 'footer_js' ], 99 );
-		//add_action( 'wp_footer', [ $this, 'enqueue_jquery_if_need' ], 0 );
 
-		// добавляем шоткод загрузок
 		add_shortcode( 'download', [ $this, 'download_shortcode' ] );
 
-		// событие редиректа
 		add_filter( 'init', [ $this, 'redirect' ], 0 );
 
-		if( $this->opt['widget'] ){
-			require_once KCC_PATH . 'KCC_Widget.php';
+		if( $this->opt->widget ){
+			require_once KCC_PATH . 'src/KCC_Widget.php';
 		}
 	}
 
-	//public function enqueue_jquery_if_need(){
-	//	wp_script_is( 'jquery', 'enqueued' ) || wp_enqueue_script( 'jquery' );
-	//}
+	/**
+	 * @return void
+	 */
+	private function set_admin_access() {
+
+		$this->admin_access = apply_filters( 'kcc_admin_access', null );
+
+		if( $this->admin_access !== null ){
+			return;
+		}
+
+		$this->admin_access = current_user_can( 'manage_options' );
+
+		if( ! $this->admin_access && $this->opt->access_roles ){
+
+			foreach( wp_get_current_user()->roles as $role ){
+
+				if( in_array( $role, (array) $this->opt->access_roles, 1 ) ){
+					$this->admin_access = true;
+					break;
+				}
+			}
+		}
+	}
+
+	public static function set_wpdb_tables() {
+		global $wpdb;
+
+		$wpdb->tables[] = 'kcc_clicks';
+		$wpdb->kcc_clicks = $wpdb->prefix . 'kcc_clicks';
+	}
 
 	static function alts_to_q_symbol( $url ) {
 		return str_replace( [ self::$q_symbol_alts['?'], self::$q_symbol_alts['&'] ], [ '?', '&' ], $url );
@@ -112,7 +120,7 @@ class KCCounter {
 			let kcckey  = '<?= self::COUNT_KEY ?>';
 			let pidkey  = '<?= self::PID_KEY ?>';
 			let urlpatt = '<?= $kcc_url_patt ?>';
-			let aclass = '<?= $this->opt['links_class'] ?>';
+			let aclass  = '<?= sanitize_html_class( $this->opt->links_class ) ?>';
 			let q_symbol_alts__fn = function(url){
 				return url
 					.replace( /[?]/g, '<?= self::$q_symbol_alts['?'] ?>' )
@@ -124,8 +132,9 @@ class KCCounter {
 				let a = ev.target;
 
 				// test `a[href*="'+ kcckey +'"]` selector
-				if( 'A' !== a.tagName || a.href.indexOf( kcckey ) === -1 )
+				if( 'A' !== a.tagName || a.href.indexOf( kcckey ) === -1 ){
 					return;
+				}
 
 				let realurl  = a.href.match( new RegExp( kcckey +'=(.*)' ) )[1];
 
@@ -142,8 +151,9 @@ class KCCounter {
 			let clickEventHandler = function( ev ){
 				let a = ev.target;
 
-				if( 'A' !== ev.target.tagName )
+				if( 'A' !== ev.target.tagName ){
 					return;
+				}
 
 				// already set before - `a[data-kccurl]`
 				if( a.dataset.kccurl ){
@@ -197,55 +207,6 @@ class KCCounter {
 		echo "$scr\n";
 	}
 
-	public function get_def_options(){
-
-		$array = [
-			'download_tpl' => '
-				<div class="kcc_block" title="Скачать" onclick="document.location.href=\'[link_url]\'">
-					<img class="alignleft" src="[icon_url]" alt="" />
-
-					<div class="kcc_info_wrap">
-						<a class="kcc_link" href="[link_url]" title="[link_name]">Скачать: [link_title]</a>
-						<div class="kcc_desc">[link_description]</div>
-						<div class="kcc_info">Скачано: [link_clicks], размер: [file_size], дата: [link_date:d M. Y]</div>
-					</div>
-					[edit_link]
-				</div>
-
-				<style>
-					.kcc_block{ position:relative; padding:1em 0 2em; transition:background-color 0.4s; cursor:pointer; }
-					.kcc_block img{ float:left; width:2.1em; height:auto; margin:0; border:0px !important; box-shadow:none !important; }
-					.kcc_block .kcc_info_wrap{ padding-left:1em; margin-left:2.1em; }
-					.kcc_block a{ border-bottom:0; }
-					.kcc_block a.kcc_link{ text-decoration:none; display:block; font-size:150%; line-height:1.2; }
-					.kcc_block .kcc_desc{ color:#666; }
-					.kcc_block .kcc_info{ font-size:80%; color:#aaa; }
-					.kcc_block:hover a{ text-decoration:none !important; }
-					.kcc_block .kcc-edit-link{ position:absolute; top:0; right:.2em; }
-					.kcc_block:after{ content:""; display:table; clear:both; }
-				</style>',
-			'links_class' => 'count',
-			// проверять class в простых ссылках
-			'add_hits'             => '',
-			// may be: '', 'in_title' or 'in_plain' (for simple links)
-			'in_post'              => 1,
-			'hide_url'             => false,
-			// прятать ссылку или нет?
-			'widget'               => 1,
-			// включить виджет для WordPress
-			'toolbar_item'         => 1,
-			// выводить ссылку на статистику в Админ баре?
-			'access_roles'         => [],
-			// Название ролей, кроме администратора, которым доступно упраление плагином.
-			'url_exclude_patterns' => '',
-			// подстроки. Если ссылка имеет указанную подстроку, то не считать клик на нее...
-		];
-
-		$array['download_tpl'] = trim( preg_replace( '~^\t{4}~m', '', $array['download_tpl'] ) );
-
-		return $array;
-	}
-
 	# получает ссылку по которой будут считаться клики
 	public function get_kcc_url( $url = '', $in_post = 0, $download = 0 ) {
 
@@ -256,7 +217,7 @@ class KCCounter {
 			self::COUNT_KEY => self::q_symbol_to_alts( $url ),
 		];
 
-		if( ! $this->opt['in_post'] ){
+		if( ! $this->opt->in_post ){
 			unset( $vars[ self::PID_KEY ] );
 		}
 
@@ -268,7 +229,7 @@ class KCCounter {
 		}
 
 		$kcc_url = home_url() . '?' . implode( '&', $kcc_url_data );
-		if( $this->opt['hide_url'] ){
+		if( $this->opt->hide_url ){
 			$kcc_url = $this->hide_link_url( $kcc_url );
 		}
 
@@ -346,9 +307,9 @@ class KCCounter {
 		}
 
 		// exclude filter
-		if( ! empty( $this->opt['url_exclude_patterns'] ) ){
+		if( ! empty( $this->opt->url_exclude_patterns ) ){
 
-			$excl_patts = array_map( 'trim', preg_split( '/[,\n]/', $this->opt['url_exclude_patterns'] ) );
+			$excl_patts = array_map( 'trim', preg_split( '/[,\n]/', $this->opt->url_exclude_patterns ) );
 
 			foreach( $excl_patts as $patt ){
 				// maybe regular expression
@@ -373,7 +334,7 @@ class KCCounter {
 		else{
 			$WHERE[] = $wpdb->prepare( 'link_url = %s ', $link_url );
 
-			if( $this->opt['in_post'] ){
+			if( $this->opt->in_post ){
 				$WHERE[] = $wpdb->prepare( 'in_post = %d', $args['in_post'] );
 			}
 			if( $args['downloads'] ){
@@ -438,7 +399,7 @@ class KCCounter {
 			if( false !== stripos( $data['link_name'], 'xn--' ) ){
 				$host = parse_url( $data['link_url'], PHP_URL_HOST );
 
-				require_once KCC_PATH . 'php-punycode/idna_convert.php';
+				require_once KCC_PATH . 'src/php-punycode/idna_convert.php';
 				$ind = new idna_convert();
 
 				$data['link_name'] = str_replace( $host, $ind->decode( $host ), $data['link_name'] );
@@ -733,11 +694,11 @@ class KCCounter {
 	# change links that have special class in given content
 	public function modify_links( $content ) {
 
-		if( false === strpos( $content, $this->opt['links_class'] ) ){
+		if( false === strpos( $content, $this->opt->links_class ) ){
 			return $content;
 		}
 
-		return preg_replace_callback( "@<a ([^>]*class=['\"][^>]*{$this->opt['links_class']}(?=[\s'\"])[^>]*)>(.+?)</a>@", [
+		return preg_replace_callback( "@<a ([^>]*class=['\"][^>]*{$this->opt->links_class}(?=[\s'\"])[^>]*)>(.+?)</a>@", [
 			$this,
 			'_make_html_link_cb',
 		], $content );
@@ -761,15 +722,15 @@ class KCCounter {
 
 		$after = '';
 		$args[ 'data-'. self::PID_KEY ] = $post->ID;
-		if( $this->opt['add_hits'] ){
+		if( $this->opt->add_hits ){
 			$link = $this->get_link( $args['href'] );
 
 			if( $link && $link->link_clicks ){
-				if( $this->opt['add_hits'] === 'in_title' ){
+				if( $this->opt->add_hits === 'in_title' ){
 					$args['title'] = "(" . __( 'clicks:', 'kama-clic-counter' ) . " {$link->link_clicks})" . $args['title'];
 				}
 				else{
-					$after = ( $this->opt['add_hits'] === 'in_plain' ) ? ' <span class="hitcounter">(' . __( 'clicks:', 'kama-clic-counter' ) . ' ' . $link->link_clicks . ')</span>' : '';
+					$after = ( $this->opt->add_hits === 'in_plain' ) ? ' <span class="hitcounter">(' . __( 'clicks:', 'kama-clic-counter' ) . ' ' . $link->link_clicks . ')</span>' : '';
 				}
 			}
 		}
@@ -827,11 +788,11 @@ class KCCounter {
 			$link = $this->get_link( $kcc_url );
 		}
 
-		$tpl = $this->opt['download_tpl'];
+		$tpl = $this->opt->download_tpl;
 		$tpl = str_replace('[link_url]', esc_url($kcc_url), $tpl );
 
-		if( $atts['title'] ) $tpl = str_replace('[link_title]',       $atts['title'], $tpl );
-		if( $atts['desc'] )  $tpl = str_replace('[link_description]', $atts['desc'],  $tpl );
+		$atts['title'] && ( $tpl = str_replace( '[link_title]', $atts['title'], $tpl ) );
+		$atts['desc'] && ( $tpl = str_replace( '[link_description]', $atts['desc'], $tpl ) );
 
 		return $this->tpl_replace_shortcodes( $tpl, $link );
 	}
@@ -847,12 +808,13 @@ class KCCounter {
 	public function tpl_replace_shortcodes( $tpl, $link ) {
 
 		$tpl = str_replace( [ '[icon_url]', '[edit_link]' ], [
-			$this->get_url_icon( $link->link_url ),
-			$this->edit_link_url( $link->link_id ),
+			KCCounter()->get_url_icon( $link->link_url ),
+			KCCounter()->edit_link_url( $link->link_id ),
 		], $tpl );
 
-		if( preg_match( '@\[link_date:([^\]]+)\]@', $tpl, $date ) )
+		if( preg_match( '@\[link_date:([^\]]+)\]@', $tpl, $date ) ){
 			$tpl = str_replace( $date[0], apply_filters( 'get_the_date', mysql2date( $date[1], $link->link_date ) ), $tpl );
+		}
 
 		// меняем все остальные шоткоды
 		preg_match_all( '@\[([^\]]+)\]@', $tpl, $match );

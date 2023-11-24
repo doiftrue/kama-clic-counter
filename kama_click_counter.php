@@ -18,32 +18,27 @@
 
 defined( 'ABSPATH' ) || exit;
 
+define( 'KCC_FILE', __FILE__ );
 define( 'KCC_VER', get_file_data( __FILE__, [ 'ver' => 'Version' ] )['ver'] );
 define( 'KCC_PATH', plugin_dir_path( __FILE__ ) );
 define( 'KCC_URL', plugin_dir_url( __FILE__ ) );
 define( 'KCC_NAME', basename( KCC_PATH ) );
 
-require_once KCC_PATH . 'KCCounter.php';
-require_once KCC_PATH . 'KCCounter_Admin.php';
-require_once KCC_PATH . 'legacy/backcompat.php';
+require_once KCC_PATH . 'src/Options.php';
+require_once KCC_PATH . 'src/KCCounter.php';
+require_once KCC_PATH . 'src/KCCounter_Admin.php';
+require_once KCC_PATH . 'src/legacy/backcompat.php';
 
 
 register_activation_hook( __FILE__, [ KCCounter(), 'activation' ] );
 
-add_action( 'plugins_loaded', 'kccounter_init' );
-
-function kccounter_init() {
-	load_plugin_textdomain( 'kama-clic-counter', false, KCC_NAME . '/languages' );
-
-	KCCounter();
-}
-
+add_action( 'plugins_loaded', [ KCCounter(), 'init' ] );
 
 /**
- * @return KCCounter|KCCounter_Admin
+ * @return \KamaClickCounter\KCCounter
  */
 function KCCounter() {
-	return KCCounter::instance();
+	return \KamaClickCounter\KCCounter::instance();
 }
 
 

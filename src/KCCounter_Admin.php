@@ -1,28 +1,33 @@
 <?php
 
+namespace KamaClickCounter;
 
-class KCCounter_Admin extends KCCounter {
+class KCCounter_Admin {
 
-	public function __construct(){
+	/** @var Options */
+	private $opt;
 
-		parent::__construct();
+	public function __construct( $options ) {
+		$this->opt = $options;
+	}
 
-		if( ! $this->admin_access ){
+	public function init() {
+
+		if( ! KCCounter()->admin_access ){
 			return;
 		}
 
 		require KCC_PATH . 'admin/admin-functions.php';
+		require KCC_PATH . 'admin/mce/mce.php';
 
-		add_action( 'admin_menu',        [ $this, 'admin_menu' ] );
+		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
 
 		add_action( 'delete_attachment', [ $this, 'delete_link_by_attach_id' ] );
-		add_action( 'edit_attachment',   [ $this, 'update_link_with_attach' ] );
+		add_action( 'edit_attachment', [ $this, 'update_link_with_attach' ] );
 
-		add_filter( 'plugin_action_links_'. plugin_basename(__FILE__), [ $this, 'plugins_page_links' ] );
+		add_filter( 'plugin_action_links_' . plugin_basename( KCC_FILE ), [ $this, 'plugins_page_links' ] );
 
 		add_filter( 'current_screen', [ $this, 'upgrade' ] );
-
-		include KCC_PATH . 'admin/mce/mce.php';
 	}
 
 	public function upgrade(){
@@ -43,7 +48,7 @@ class KCCounter_Admin extends KCCounter {
 	function admin_menu(){
 
 		// just in case
-		if( ! $this->admin_access ){
+		if( ! KCCounter()->admin_access ){
 			return;
 		}
 
@@ -62,7 +67,7 @@ class KCCounter_Admin extends KCCounter {
 	function options_page_load(){
 
 		// just in case...
-		if( ! $this->admin_access ){
+		if( ! KCCounter()->admin_access ){
 			return;
 		}
 
@@ -78,7 +83,7 @@ class KCCounter_Admin extends KCCounter {
 			$_POST = wp_unslash( $_POST );
 
 			// очистка
-			$opt = $this->get_def_options();
+			$opt = $this->opt->get_def_options();
 			foreach( $opt as $key => & $val ){
 				$val = $_POST[ $key ] ?? '';
 
@@ -95,9 +100,7 @@ class KCCounter_Admin extends KCCounter {
 			}
 			unset( $val );
 
-			update_option( self::OPT_NAME, $opt );
-
-			if( $this->opt = get_option( self::OPT_NAME ) ){
+			if( $this->opt->update_option( $opt ) ){
 				$this->msg = __( 'Settings updated.', 'kama-clic-counter' );
 			}
 			else{
@@ -105,14 +108,14 @@ class KCCounter_Admin extends KCCounter {
 			}
 		}
 		// reset options
-		elseif( isset($_POST['reset']) ){
+		elseif( isset( $_POST['reset'] ) ){
 
 			if( ! wp_verify_nonce( $_nonce, 'save_options' ) && check_admin_referer( 'save_options' ) ){
 				return $this->msg = 'error: nonce failed';
 			}
 
-			$this->set_def_options();
-			$this->msg = __('Settings reseted to defaults', 'kama-clic-counter');
+			$this->opt->reset_to_defaults();
+			$this->msg = __( 'Settings reseted to defaults', 'kama-clic-counter' );
 		}
 		// update_link
 		elseif( isset($_POST['update_link']) ){
@@ -173,7 +176,7 @@ class KCCounter_Admin extends KCCounter {
 		}
 	}
 
-	function admin_page_url() {
+	public static function admin_page_url() {
 		return admin_url( 'admin.php?page=' . KCC_NAME );
 	}
 
@@ -181,17 +184,12 @@ class KCCounter_Admin extends KCCounter {
 		include KCC_PATH . 'admin/options-page.php';
 	}
 
-	function set_def_options(){
-		update_option( self::OPT_NAME, $this->get_def_options() );
-
-		return $this->opt = get_option( self::OPT_NAME );
-	}
-
 	function update_link( $id, $data ){
 		global $wpdb;
 
-		if( $id = (int) $id )
-			$query = $wpdb->update( $wpdb->kcc_clicks, $data, [ 'link_id' =>$id ] );
+		if( $id = (int) $id ){
+			$query = $wpdb->update( $wpdb->kcc_clicks, $data, [ 'link_id' => $id ] );
+		}
 
 		// обновление вложения, если оно есть
 		if( $data['attach_id'] > 0 ){
@@ -218,8 +216,9 @@ class KCCounter_Admin extends KCCounter {
 
 		$array_ids = array_filter( array_map( 'intval', (array) $array_ids ) );
 
-		if( ! $array_ids )
+		if( ! $array_ids ){
 			return false;
+		}
 
 		return $wpdb->query( "DELETE FROM $wpdb->kcc_clicks WHERE link_id IN (" . implode( ',', $array_ids ) . ")" );
 	}
@@ -228,8 +227,9 @@ class KCCounter_Admin extends KCCounter {
 	function delete_link_by_attach_id( $attach_id ){
 		global $wpdb;
 
-		if( ! $attach_id )
+		if( ! $attach_id ){
 			return false;
+		}
 
 		return $wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->kcc_clicks WHERE attach_id = %d", $attach_id ) );
 	}
@@ -252,8 +252,10 @@ class KCCounter_Admin extends KCCounter {
 	public function activation(){
 		global $wpdb;
 
-		$charset_collate  = (! empty( $wpdb->charset )) ? "DEFAULT CHARSET=$wpdb->charset" : '';
-		$charset_collate .= (! empty( $wpdb->collate )) ? " COLLATE $wpdb->collate" : '';
+		KCCounter::set_wpdb_tables();
+
+		$charset_collate = ( ! empty( $wpdb->charset ) ) ? "DEFAULT CHARSET=$wpdb->charset" : '';
+		$charset_collate .= ( ! empty( $wpdb->collate ) ) ? " COLLATE $wpdb->collate" : '';
 
 		// Создаем таблицу если такой еще не существует
 		$sql = "CREATE TABLE $wpdb->kcc_clicks (
@@ -279,8 +281,8 @@ class KCCounter_Admin extends KCCounter {
 
 		dbDelta( $sql );
 
-		if( ! get_option( self::OPT_NAME ) ){
-			$this->set_def_options();
+		if( ! get_option( Options::OPT_NAME ) ){
+			$this->opt->reset_to_defaults();
 		}
 	}
 

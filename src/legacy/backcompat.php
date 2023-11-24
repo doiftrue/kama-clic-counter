@@ -2,6 +2,9 @@
 
 // Backward compatibility with < 3.5.0 version
 
+use KamaClickCounter\Options;
+use KamaClickCounter\KCCounter;
+
 add_action( 'plugins_loaded', 'kcc_backward_compatibility', 20 );
 
 function kcc_backward_compatibility() {
@@ -14,7 +17,7 @@ if( ! class_exists( 'KCC' ) ){
 
 	final class KCC {
 
-		const OPT_NAME = KCCounter::OPT_NAME;
+		const OPT_NAME = Options::OPT_NAME;
 		const COUNT_KEY = KCCounter::COUNT_KEY;
 		const PID_KEY = KCCounter::PID_KEY;
 
@@ -44,7 +47,7 @@ if( ! class_exists( 'KCClick' ) ){
 
 	final class KCClick {
 
-		const OPT_NAME = KCCounter::OPT_NAME;
+		const OPT_NAME = Options::OPT_NAME;
 		const COUNT_KEY = KCCounter::COUNT_KEY;
 		const PID_KEY = KCCounter::PID_KEY;
 
