@@ -34,8 +34,8 @@ register_activation_hook( __FILE__, [ KCCounter(), 'activation' ] );
 
 add_action( 'plugins_loaded', [ KCCounter(), 'init' ] );
 
-function KCCounter(): KCCounter {
-	return KCCounter::instance();
+function KCCounter(): KCC_Counter {
+	return KCC_Counter::instance();
 }
 
 

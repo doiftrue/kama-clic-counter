@@ -3,7 +3,7 @@
 namespace KamaClickCounter;
 
 /**
- * @var KCCounter_Admin $this
+ * @var KCC_Admin $this
  */
 defined( 'ABSPATH' ) || exit;
 ?>

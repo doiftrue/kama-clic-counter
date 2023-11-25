@@ -2,7 +2,7 @@
 
 namespace KamaClickCounter;
 
-class KCCounter_Admin {
+class KCC_Admin {
 
 	/** @var Options */
 	private $opt;
@@ -134,7 +134,7 @@ class KCCounter_Admin {
 				}
 
 				if( $key === 'link_url' ){
-					$val = KCCounter::del_http_protocol( strip_tags( $val ) );
+					$val = KCC_Counter::del_http_protocol( strip_tags( $val ) );
 				}
 				else{
 					$val = sanitize_text_field( $val );
@@ -252,7 +252,7 @@ class KCCounter_Admin {
 	public function activation(){
 		global $wpdb;
 
-		KCCounter::set_wpdb_tables();
+		KCC_Counter::set_wpdb_tables();
 
 		$charset_collate = ( ! empty( $wpdb->charset ) ) ? "DEFAULT CHARSET=$wpdb->charset" : '';
 		$charset_collate .= ( ! empty( $wpdb->collate ) ) ? " COLLATE $wpdb->collate" : '';

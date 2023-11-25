@@ -2,7 +2,7 @@
 
 namespace KamaClickCounter;
 
-class KCCounter {
+class KCC_Counter {
 
 	const COUNT_KEY = 'kcccount';
 
@@ -11,7 +11,7 @@ class KCCounter {
 	/** @var Options */
 	public $opt;
 
-	/** @var KCCounter_Admin */
+	/** @var KCC_Admin */
 	public $admin;
 
 	public static $q_symbol_alts = [
@@ -41,7 +41,7 @@ class KCCounter {
 		$this->set_admin_access();
 
 		if( is_admin() ){
-			$this->admin = new KCCounter_Admin( $this->opt );
+			$this->admin = new KCC_Admin( $this->opt );
 			$this->admin->init();
 		}
 
@@ -543,23 +543,25 @@ class KCCounter {
 		}
 
 		$return = [
-			// no esc_url()
-			self::COUNT_KEY => $url,
-			self::PID_KEY   => (int) @ $query_args[ self::PID_KEY ],
-			//array_key_exists('download', $query_args ), // isset null не берет
-			'download'      => ! ! @ $query_args['download'],
+			self::COUNT_KEY => $url, // no esc_url()
+			self::PID_KEY   => (int) ( $query_args[ self::PID_KEY ] ?? 0 ),
+			// array_key_exists( 'download', $query_args ), // isset null не берет
+			'download'      => (bool) ( $query_args['download'] ?? false ),
 		];
 
 		return apply_filters( 'parce_kcc_url', $return );
 	}
 
-	static function del_http_protocol( $url ){
+	public static function del_http_protocol( $url ){
 		return preg_replace( '/https?:/', '', $url );
 	}
 
 	public function is_file( $url ){
-
-		// Allow to repalce `KCCounter::is_file()` method
+		/**
+		 * Allows to repalce {@see KCC_Counter::is_file()} method.
+		 *
+		 * @param bool $is_file
+		 */
 		$return = apply_filters( 'kcc_is_file', null );
 		if( null !== $return ){
 			return $return;
@@ -573,7 +575,7 @@ class KCCounter {
 
 		$not_supported_ext = [ 'html', 'htm', 'xhtml', 'xht', 'php' ];
 
-		if( in_array( $f_ext, $not_supported_ext ) ){
+		if( in_array( $f_ext, $not_supported_ext, true ) ){
 			return false;
 		}
 
@@ -582,12 +584,8 @@ class KCCounter {
 
 	/**
 	 * Retrieve title of a (local or remote) webpage.
-	 *
-	 * @param  string $url URL title we get to
-	 *
-	 * @return string
 	 */
-	public function get_html_title( $url ) {
+	public function get_html_title( string $url ): string {
 
 		// without protocol - //site.ru/foo
 		if( '//' === substr( $url, 0, 2 ) ){
