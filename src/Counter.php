@@ -2,7 +2,7 @@
 
 namespace KamaClickCounter;
 
-class KCC_Counter {
+class Counter {
 
 	const COUNT_KEY = 'kcccount';
 
@@ -11,7 +11,7 @@ class KCC_Counter {
 	/** @var Options */
 	public $opt;
 
-	public static $q_symbol_alts = [
+	const URL_PLACEHOLDERS = [
 		'?' => '__QUESTION__',
 		'&' => '__AMPERSAND__',
 	];
@@ -32,15 +32,14 @@ class KCC_Counter {
 		add_shortcode( 'download', [ $this, 'download_shortcode' ] );
 
 		add_filter( 'init', [ $this, 'redirect' ], 0 );
-
 	}
 
-	static function alts_to_q_symbol( $url ) {
-		return str_replace( [ self::$q_symbol_alts['?'], self::$q_symbol_alts['&'] ], [ '?', '&' ], $url );
+	private static function replace_url_placeholders( $url ) {
+		return str_replace( [ self::URL_PLACEHOLDERS['?'], self::URL_PLACEHOLDERS['&'] ], [ '?', '&' ], $url );
 	}
 
-	static function q_symbol_to_alts( $url ) {
-		return str_replace( [ '?', '&' ], [ self::$q_symbol_alts['?'], self::$q_symbol_alts['&'] ], $url );
+	private static function add_url_placeholders( $url ) {
+		return str_replace( [ '?', '&' ], [ self::URL_PLACEHOLDERS['?'], self::URL_PLACEHOLDERS['&'] ], $url );
 	}
 
 	/**
@@ -56,8 +55,8 @@ class KCC_Counter {
 				'{pidkey}'      => self::PID_KEY,
 				'{urlpatt}'     => $this->get_kcc_url( '{url}', '{in_post}', '{download}' ),
 				'{aclass}'      => sanitize_html_class( $this->opt->links_class ),
-				'{questSymbol}' => self::$q_symbol_alts['?'],
-				'{ampSymbol}'   => self::$q_symbol_alts['&'],
+				'{questSymbol}' => self::URL_PLACEHOLDERS['?'],
+				'{ampSymbol}'   => self::URL_PLACEHOLDERS['&'],
 			]
 		);
 
@@ -83,7 +82,7 @@ class KCC_Counter {
 		$vars = [
 			'download'      => sanitize_text_field( $download ),
 			self::PID_KEY   => sanitize_text_field( $in_post ),
-			self::COUNT_KEY => self::q_symbol_to_alts( $url ),
+			self::COUNT_KEY => self::add_url_placeholders( $url ),
 		];
 
 		if( ! $this->opt->in_post ){
@@ -388,7 +387,7 @@ class KCC_Counter {
 		// cut URL from $query, because - there could be query args (&) that is why cut it
 		$split = preg_split( '/[&?]?'. self::COUNT_KEY .'=/', $kcc_query );
 		$query = $split[0];
-		$url   = self::alts_to_q_symbol( $split[1] ); // can be base64 encoded
+		$url   = self::replace_url_placeholders( $split[1] ); // can be base64 encoded
 
 		if( ! $url ){
 			return [];
@@ -435,7 +434,7 @@ class KCC_Counter {
 
 	public function is_file( $url ){
 		/**
-		 * Allows to repalce {@see KCC_Counter::is_file()} method.
+		 * Allows to repalce {@see Counter::is_file()} method.
 		 *
 		 * @param bool $is_file
 		 */
@@ -688,7 +687,7 @@ class KCC_Counter {
 	 *
 	 * @return string HTML код блока - замененный шаблон
 	 */
-	public function tpl_replace_shortcodes( $tpl, $link ) {
+	public function tpl_replace_shortcodes( string $tpl, $link ): string {
 
 		$tpl = strtr( $tpl, [
 			'[icon_url]'  => plugin()->counter->get_url_icon( $link->link_url ),
@@ -714,6 +713,7 @@ class KCC_Counter {
 	 *
 	 * @param  string/int  $kcc_url      URL или ID ссылки, или kcc_URL
 	 * @param  boolean     $clear_cache  Когда нужно очистить кэш ссылки.
+	 *
 	 * @return object/null               null при очистке кэша или если не удалось получить данные.
 	 */
 	public function get_link( $kcc_url, $clear_cache = false ) {

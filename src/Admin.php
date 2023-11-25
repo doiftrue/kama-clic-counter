@@ -2,7 +2,7 @@
 
 namespace KamaClickCounter;
 
-class KCC_Admin {
+class Admin {
 
 	/** @var string */
 	public $msg = '';
@@ -141,7 +141,7 @@ class KCC_Admin {
 				}
 
 				if( $key === 'link_url' ){
-					$val = KCC_Counter::del_http_protocol( strip_tags( $val ) );
+					$val = Counter::del_http_protocol( strip_tags( $val ) );
 				}
 				else{
 					$val = sanitize_text_field( $val );

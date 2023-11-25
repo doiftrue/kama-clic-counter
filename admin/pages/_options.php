@@ -4,7 +4,7 @@ namespace KamaClickCounter;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * @var KCC_Admin $this
+ * @var Admin $this
  */
 
 $def = $this->opt->get_def_options();

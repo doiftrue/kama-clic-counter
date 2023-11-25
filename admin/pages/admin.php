@@ -5,7 +5,7 @@ namespace KamaClickCounter;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * @var KCC_Admin $this
+ * @var Admin $this
  */
 
 $subpage = $_GET['subpage'] ?? '';
@@ -40,7 +40,7 @@ $edit_link_id = (int) ( $_GET['edit_link'] ?? 0 )
 		);
 
 		?>
-		<h1 class="nav-tab-wrapper demenu"><?= __( 'Kama Click Counter', 'kama-clic-counter' ) ?>
+		<h1 class="nav-tab-wrapper demenu">Kama Click Counter
 			<small><code>v<?= plugin()->info['version'] ?></code></small>
 			<br><br>
 

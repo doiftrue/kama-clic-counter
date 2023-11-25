@@ -5,7 +5,7 @@ namespace KamaClickCounter;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * @var KCC_Admin $this
+ * @var Admin $this
  */
 
 global $wpdb;

@@ -31,10 +31,10 @@ class Plugin {
 	/** @var Options */
 	public $opt;
 
-	/** @var KCC_Admin */
+	/** @var Admin */
 	public $admin;
 
-	/** @var KCC_Counter */
+	/** @var Counter */
 	public $counter;
 
 	public function __construct( string $main_file_path ) {
@@ -75,11 +75,11 @@ class Plugin {
 		$this->set_admin_access();
 
 		if( is_admin() ){
-			$this->admin = new KCC_Admin( $this->opt );
+			$this->admin = new Admin( $this->opt );
 			$this->admin->init();
 		}
 
-		$this->counter = new KCC_Counter();
+		$this->counter = new Counter();
 		$this->counter->init();
 
 		// admin_bar

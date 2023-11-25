@@ -1,7 +1,7 @@
 <?php
 /**
  * TinyMCE extend.
- * This file includs in KCC_Admin Class.
+ * This file includs in Admin Class.
  */
 
 namespace KamaClickCounter;
