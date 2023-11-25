@@ -8,38 +8,24 @@ class Counter {
 
 	const PID_KEY = 'kccpid';
 
-	/** @var Options */
-	public $opt;
-
 	const URL_PLACEHOLDERS = [
 		'?' => '__QUESTION__',
 		'&' => '__AMPERSAND__',
 	];
 
-	public function __construct(){
+	/** @var Options */
+	public $opt;
 
-		$this->opt = plugin()->opt;
+	public function __construct( Options $options ){
+
+		$this->opt = $options;
 	}
 
 	public function init() {
 
-		if( $this->opt->links_class ){
-			add_filter( 'the_content', [ $this, 'modify_links' ] );
-		}
-
 		add_action( 'wp_footer', [ $this, 'footer_js' ], 99 );
 
-		add_shortcode( 'download', [ $this, 'download_shortcode' ] );
-
 		add_filter( 'init', [ $this, 'redirect' ], 0 );
-	}
-
-	private static function replace_url_placeholders( $url ) {
-		return str_replace( [ self::URL_PLACEHOLDERS['?'], self::URL_PLACEHOLDERS['&'] ], [ '?', '&' ], $url );
-	}
-
-	private static function add_url_placeholders( $url ) {
-		return str_replace( [ '?', '&' ], [ self::URL_PLACEHOLDERS['?'], self::URL_PLACEHOLDERS['&'] ], $url );
 	}
 
 	/**
@@ -140,7 +126,6 @@ class Counter {
 	 * @return bool|int
 	 */
 	public function do_count( $kcc_url, $count = true ) {
-		global $wpdb;
 
 		$parsed = is_array( $kcc_url ) ? $kcc_url : $this->parce_kcc_url( $kcc_url );
 
@@ -161,37 +146,47 @@ class Counter {
 		//	return;
 
 		// checks
+
 		// can't be empty - must be url or attach ID
-		if( empty( $link_url ) ){
+		if( ! $link_url ){
 			return false;
 		}
 
 		// can't contain self parameters - like: link&kcccount=
 		$_pattern = '~[?&](?:download|' . self::COUNT_KEY . '|' . self::PID_KEY . ')~';
 		if( preg_match( $_pattern, $link_url ) ){
-			return print '<h3>kcc error: download shortcode bad url: cant contain self parameters like: "link&kcccount="</h3>';
+			echo '<h3>kcc error: download shortcode bad url: cant contain self parameters like: "link&kcccount="</h3>';
+
+			return false;
 		}
 
-		// exclude filter
-		if( ! empty( $this->opt->url_exclude_patterns ) ){
-
-			$excl_patts = array_map( 'trim', preg_split( '/[,\n]/', $this->opt->url_exclude_patterns ) );
-
-			foreach( $excl_patts as $patt ){
-				// maybe regular expression
-				if( $patt[0] === '/' && substr( $patt, -1 ) === '/' ){
-					if( preg_match( $patt, $link_url ) ){
-						return false; // stop
-					}
-				}
-				// simple substring check
-				else{
-					if( false !== strpos( $link_url, $patt ) ){
-						return false; // stop
-					}
-				}
-			}
+		if( $this->is_url_in_exclude_list( $link_url ) ){
+			return false;
 		}
+
+		$updated = $this->update_existing_link( $args );
+		if( $updated ){
+			$return = true;
+		}
+		else{
+			list( $insert_id, $insert_data ) = $this->insert_new_link( $args );
+			$return = $insert_id;
+		}
+
+		/**
+		 * Allows to do something after count.
+		 */
+		do_action( 'kcc_count_after', $args, $updated, ( $insert_data ?? [] ) );
+
+		$this->clear_link_cache( $kcc_url );
+
+		return $return;
+	}
+
+	private function update_existing_link( array $args ): bool {
+		global $wpdb;
+
+		$link_url = $args['link_url'];
 
 		$WHERE = [];
 		if( is_numeric( $link_url ) ){
@@ -210,112 +205,132 @@ class Counter {
 
 		$WHERE = implode( ' AND ', $WHERE );
 
-		$curr_time = current_time( 'mysql' );
+		// NOTE: $wpdb->prepare() can't be used, because of false will be returned if the link
+		// with encoded symbols is passed, for example, Cyrillic will have % symbol: /%d0%bf%d1%80%d0%b8%d0%b2%d0%b5%d1%82...
+		$update_sql = "UPDATE $wpdb->kcc_clicks SET link_clicks = (link_clicks + 1), last_click_date = '" . current_time( 'mysql' ) . "' WHERE $WHERE LIMIT 1";
 
-		$sql = "UPDATE $wpdb->kcc_clicks SET link_clicks = (link_clicks + 1), last_click_date = '" . $curr_time . "' WHERE $WHERE LIMIT 1";
-		// $wpdb->prepare() can't be used, because of false will be returned if the link with encoded symbols is passed, for example, Cyrillic will have % symbol: /%d0%bf%d1%80%d0%b8%d0%b2%d0%b5%d1%82...
+		$this->check_and_delete_multiple_same_links( $WHERE );
 
-		// Kludge: update doubles...
-		$more_links = $wpdb->get_results( "SELECT * FROM $wpdb->kcc_clicks WHERE $WHERE LIMIT 1,999" );
-		if( $more_links ){
+		do_action_ref_array( 'kcc_count_before', [ $args, & $update_sql ] );
 
-			$up_link_id = $wpdb->get_var( "SELECT link_id FROM $wpdb->kcc_clicks WHERE $WHERE LIMIT 1" );
+		return (bool) $wpdb->query( $update_sql );
+	}
 
-			foreach( $more_links as $link ){
-				$wpdb->query( "UPDATE $wpdb->kcc_clicks SET link_clicks = (link_clicks + 1) WHERE link_id = $up_link_id;" );
+	/**
+	 * For some reason (possibly due to race condition) additional identical links sometimes appear in the database.
+	 * This method tries to find such links and removes them.
+	 */
+	private function check_and_delete_multiple_same_links( $WHERE ) {
+		global $wpdb;
+
+		$all_links = $wpdb->get_results( "SELECT * FROM $wpdb->kcc_clicks WHERE $WHERE ORDER BY link_clicks DESC LIMIT 99" );
+
+		if( count( $all_links ) > 1 ){
+			$first_link = array_shift( $all_links );
+
+			foreach( $all_links as $link ){
+				$add_clicks = (int) $link->link_clicks;
+				$wpdb->query( "UPDATE $wpdb->kcc_clicks SET link_clicks = (link_clicks + $add_clicks) WHERE link_id = $first_link->link_id;" );
 				$wpdb->query( "DELETE FROM $wpdb->kcc_clicks WHERE link_id = $link->link_id;" );
 			}
 		}
+	}
 
-		// data of adding link
-		$data = [];
+	private function insert_new_link( array $args ): array {
+		global $wpdb;
 
-		do_action_ref_array( 'kcc_count_before', [ $args, & $sql, & $data ] );
+		$link_url = $args['link_url'];
 
-		// try to update
-		$updated = $wpdb->query( $sql );
+		// data to add to DB
+		$insert_data = [
+			'attach_id'        => 0,
+			'in_post'          => $args['in_post'],
+			// Для загрузок, когда запись добавляется просто при просмотре,
+			// все равно добавляется 1 первый просмотр, чтобы добавить запись в бД
+			'link_clicks'      => $args['count'] ? 1 : 0,
+			'link_name'        => untrailingslashit( $this->is_file( $link_url )
+				? basename( $link_url )
+				: preg_replace( '~^(https?:)?//|\?.*$~', '', $link_url ) ),
+			'link_title'       => '', // устанавливается отдлеьно ниже
+			'link_description' => '',
+			'link_date'        => current_time( 'mysql' ),
+			'last_click_date'  => current_time( 'mysql' ),
+			'link_url'         => $link_url,
+			'file_size'        => self::file_size( $link_url ),
+			'downloads'        => $args['downloads'],
+		];
 
-		// updated
-		if( $updated ){
-			$return = true;
-		}
-		// insert
-		else{
+		// cyrillic domain
+		if( false !== stripos( $insert_data['link_name'], 'xn--' ) ){
+			$host = parse_url( $insert_data['link_url'], PHP_URL_HOST );
 
-			// data to add to DB
-			$data = array_merge( [
-				'attach_id'        => 0,
-				'in_post'          => $args['in_post'],
-				// Для загрузок, когда запись добавляется просто при просмотре,
-				// все равно добавляется 1 первый просмотр, чтобы добавить запись в бД
-				'link_clicks'      => $args['count'] ? 1 : 0,
-				'link_name'        => untrailingslashit( $this->is_file( $link_url )
-					? basename( $link_url )
-					: preg_replace( '~^(https?:)?//|\?.*$~', '', $link_url ) ),
-				'link_title'       => '', // устанавливается отдлеьно ниже
-				'link_description' => '',
-				'link_date'        => $curr_time,
-				'last_click_date'  => $curr_time,
-				'link_url'         => $link_url,
-				'file_size'        => self::file_size( $link_url ),
-				'downloads'        => $args['downloads'],
-			], $data );
+			$ind = new \KamaClickCounter\libs\idna_convert();
 
-			// cyrillic domain
-			if( false !== stripos( $data['link_name'], 'xn--' ) ){
-				$host = parse_url( $data['link_url'], PHP_URL_HOST );
-
-				$ind = new \KamaClickCounter\libs\idna_convert();
-
-				$data['link_name'] = str_replace( $host, $ind->decode( $host ), $data['link_name'] );
-			}
-
-			$title = &$data['link_title'];
-
-			// is_attach?
-			$_link_url_like = '%' . $wpdb->esc_like( $link_url ) . '%';
-			$attach = $wpdb->get_row( $wpdb->prepare(
-				"SELECT * FROM $wpdb->posts WHERE post_type = 'attachment' AND guid LIKE %s", $_link_url_like
-			) );
-			if( $attach ){
-				$title = $attach->post_title;
-				$data['attach_id'] = $attach->ID;
-				$data['link_description'] = $attach->post_content;
-			}
-
-			// get link_title from url
-			if( ! $title ){
-				if( $this->is_file( $link_url ) ){
-					$title = preg_replace( '~[.][^.]+$~', '', $data['link_name'] ); // delete ext
-					$title = preg_replace( '~[_-]~', ' ', $title );
-					$title = ucwords( $title );
-				}
-				else{
-					$title = $this->get_html_title( $link_url );
-				}
-			}
-
-			// if title could not be determined
-			if( ! $title ){
-				$title = $data['link_name'];
-			}
-
-			$data = apply_filters( 'kcc_insert_link_data', $data, $args );
-
-			// sanitize data before save
-			$data['link_name'] = sanitize_text_field( $data['link_name'] );
-
-			$return = $wpdb->insert( $wpdb->kcc_clicks, $data ) ? $wpdb->insert_id : false;
+			$insert_data['link_name'] = str_replace( $host, $ind->decode( $host ), $insert_data['link_name'] );
 		}
 
-		/**
-		 * Allows to do something after count.
-		 */
-		do_action( 'kcc_count_after', $args, $updated, $data );
+		$title = &$insert_data['link_title'];
 
-		$this->clear_link_cache( $kcc_url );
+		// is_attach?
+		$_link_url_like = '%' . $wpdb->esc_like( $link_url ) . '%';
+		$attach = $wpdb->get_row( $wpdb->prepare(
+			"SELECT * FROM $wpdb->posts WHERE post_type = 'attachment' AND guid LIKE %s", $_link_url_like
+		) );
+		if( $attach ){
+			$title = $attach->post_title;
+			$insert_data['attach_id'] = $attach->ID;
+			$insert_data['link_description'] = $attach->post_content;
+		}
 
-		return $return;
+		// get link_title from url
+		if( ! $title ){
+			if( $this->is_file( $link_url ) ){
+				$title = preg_replace( '~[.][^.]+$~', '', $insert_data['link_name'] ); // delete ext
+				$title = preg_replace( '~[_-]~', ' ', $title );
+				$title = ucwords( $title );
+			}
+			else{
+				$title = $this->get_html_title( $link_url );
+			}
+		}
+
+		// if title could not be determined
+		if( ! $title ){
+			$title = $insert_data['link_name'];
+		}
+
+		$insert_data = apply_filters( 'kcc_insert_link_data', $insert_data, $args );
+
+		// sanitize data before save
+		$insert_data['link_name'] = sanitize_text_field( $insert_data['link_name'] );
+
+		$insert_id = $wpdb->insert( $wpdb->kcc_clicks, $insert_data ) ? $wpdb->insert_id : 0;
+
+		return [ $insert_id, $insert_data ];
+	}
+
+	private function is_url_in_exclude_list( $url ): bool {
+
+		if( ! $this->opt->url_exclude_patterns ){
+			return false;
+		}
+
+		$excl_patts = array_map( 'trim', preg_split( '/[,\n]/', $this->opt->url_exclude_patterns ) );
+
+		foreach( $excl_patts as $patt ){
+			// maybe regular expression
+			if( $patt[0] === '/' && substr( $patt, -1 ) === '/' ){
+				if( preg_match( $patt, $url ) ){
+					return true; // stop
+				}
+			}
+			// simple substring check
+			elseif( false !== strpos( $url, $patt ) ){
+				return true; // stop
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -432,7 +447,7 @@ class Counter {
 		return preg_replace( '/https?:/', '', $url );
 	}
 
-	public function is_file( $url ){
+	private function is_file( $url ){
 		/**
 		 * Allows to repalce {@see Counter::is_file()} method.
 		 *
@@ -461,7 +476,7 @@ class Counter {
 	/**
 	 * Retrieve title of a (local or remote) webpage.
 	 */
-	public function get_html_title( string $url ): string {
+	private function get_html_title( string $url ): string {
 
 		// without protocol - //site.ru/foo
 		if( '//' === substr( $url, 0, 2 ) ){
@@ -485,7 +500,7 @@ class Counter {
 	 *
 	 * @return string Eg: `136.6 KB` or empty string if no size determined.
 	 */
-	public static function file_size( string $url ): string {
+	private static function file_size( string $url ): string {
 
 		//$url = urlencode( $url );
 		$size = null;
@@ -538,7 +553,7 @@ class Counter {
 	 *
 	 * @return int The size of the file referenced by $url, or 0 if the size could not be determined.
 	 */
-	public static function curl_get_file_size( string $url ): int {
+	private static function curl_get_file_size( string $url ): int {
 
 		// $url не может быть без протокола http
 		if( preg_match( '~^//~', $url ) ){
@@ -569,142 +584,6 @@ class Counter {
 		}
 
 		return 0;
-	}
-
-	# TEXT REPLACEMENT PART -------------
-
-	# change links that have special class in given content
-	public function modify_links( $content ) {
-
-		if( false === strpos( $content, $this->opt->links_class ) ){
-			return $content;
-		}
-
-		return preg_replace_callback( "@<a ([^>]*class=['\"][^>]*{$this->opt->links_class}(?=[\s'\"])[^>]*)>(.+?)</a>@", [
-			$this,
-			'_make_html_link_cb',
-		], $content );
-	}
-
-	# parse string to detect and process pairs of tag="value"
-	public function _make_html_link_cb( $match ){
-		global $post;
-
-		$link_attrs  = $match[1];
-		$link_anchor = $match[2];
-
-		preg_match_all( '~[^=]+=([\'"])[^\1]+?\1~', $link_attrs, $args );
-
-		foreach( $args[0] as $pair ){
-			list( $tag, $value ) = explode( '=', $pair, 2 );
-			$value = trim( trim($value, '"\'') );
-			$args[ trim($tag) ] = $value;
-		}
-		unset( $args[0], $args[1] );
-
-		$after = '';
-		$args[ 'data-'. self::PID_KEY ] = $post->ID;
-		if( $this->opt->add_hits ){
-			$link = $this->get_link( $args['href'] );
-
-			if( $link && $link->link_clicks ){
-				if( $this->opt->add_hits === 'in_title' ){
-					$args['title'] = "(" . __( 'clicks:', 'kama-clic-counter' ) . " {$link->link_clicks})" . $args['title'];
-				}
-				else{
-					$after = ( $this->opt->add_hits === 'in_plain' ) ? ' <span class="hitcounter">(' . __( 'clicks:', 'kama-clic-counter' ) . ' ' . $link->link_clicks . ')</span>' : '';
-				}
-			}
-		}
-
-		$link_attrs = '';
-		foreach( $args as $key => $value ){
-			$link_attrs .= sprintf( '%s="%s"', $key, esc_attr( $value ) );
-		}
-
-		$link_attrs = trim( $link_attrs );
-
-		return "<a $link_attrs>$link_anchor</a>$after";
-	}
-
-	# gets a link to the icon image by the extension in the passed URL
-	public function get_url_icon( $url ){
-
-		$url_path = parse_url( $url, PHP_URL_PATH );
-
-		if( preg_match( '~\.([a-zA-Z0-9]{1,8})(?=$|\?.*)~', $url_path, $m ) ){
-			$icon_name = $m[1] . '.png';
-		}
-		else{
-			$icon_name = 'default.png';
-		}
-
-		$icon_name = file_exists( plugin()->dir . "/assets/icons/$icon_name" ) ? $icon_name : 'default.png';
-
-		$icon_url = plugin()->url . "/assets/icons/$icon_name";
-
-		return apply_filters( 'get_url_icon', $icon_url, $icon_name );
-	}
-
-	public function download_shortcode( $atts = [] ): string {
-		global $post;
-
-		// белый список параметров и значения по умолчанию
-		$atts = shortcode_atts( [
-			'url'   => '',
-			'title' => '',
-			'desc'  => '',
-		], $atts );
-
-		if( ! $atts['url'] ){
-			return '[download]';
-		}
-
-		$kcc_url = $this->get_kcc_url( $atts['url'], $post->ID, 1 );
-
-		// записываем данные в БД
-		$link = $this->get_link( $kcc_url );
-
-		if( ! $link ){
-			$this->do_count( $kcc_url, $count = false ); // для проверки, чтобы не считать эту операцию
-			$link = $this->get_link( $kcc_url );
-		}
-
-		$tpl = $this->opt->download_tpl;
-		$tpl = str_replace( '[link_url]', esc_url( $kcc_url ), $tpl );
-
-		$atts['title'] && ( $tpl = str_replace( '[link_title]', $atts['title'], $tpl ) );
-		$atts['desc'] && ( $tpl = str_replace( '[link_description]', $atts['desc'], $tpl ) );
-
-		return $this->tpl_replace_shortcodes( $tpl, $link );
-	}
-
-	/**
-	 * Заменяет шоткоды в шаблоне на реальные данные
-	 *
-	 * @param string $tpl   Шаблон для замены в нем данных
-	 * @param object $link  данные ссылки из БД
-	 *
-	 * @return string HTML код блока - замененный шаблон
-	 */
-	public function tpl_replace_shortcodes( string $tpl, $link ): string {
-
-		$tpl = strtr( $tpl, [
-			'[icon_url]'  => plugin()->counter->get_url_icon( $link->link_url ),
-			'[edit_link]' => plugin()->counter->edit_link_url( $link->link_id ),
-		] );
-
-		if( preg_match( '@\[link_date:([^\]]+)\]@', $tpl, $date ) ){
-			$tpl = str_replace( $date[0], apply_filters( 'get_the_date', mysql2date( $date[1], $link->link_date ) ), $tpl );
-		}
-
-		// меняем все остальные шоткоды
-		preg_match_all( '@\[([^\]]+)\]@', $tpl, $match );
-		foreach( $match[1] as $data ){
-			$tpl = str_replace( "[$data]", $link->$data, $tpl );
-		}
-
-		return $tpl;
 	}
 
 	/**
@@ -767,19 +646,12 @@ class Counter {
 		$this->get_link( $kcc_url, 'clear_cache' );
 	}
 
-	/**
-	 * Returns the URL on the edit links in the admin
-	 */
-	public function edit_link_url( int $link_id, string $edit_text = '' ): string {
+	private static function replace_url_placeholders( $url ) {
+		return str_replace( [ self::URL_PLACEHOLDERS['?'], self::URL_PLACEHOLDERS['&'] ], [ '?', '&' ], $url );
+	}
 
-		if( ! plugin()->manage_access ){
-			return '';
-		}
-
-		return sprintf( '<a class="kcc-edit-link" href="%s">%s</a>',
-			admin_url( 'admin.php?page=' . plugin()->slug . "&edit_link=$link_id" ),
-			( $edit_text ?: '✎' )
-		);
+	private static function add_url_placeholders( $url ) {
+		return str_replace( [ '?', '&' ], [ self::URL_PLACEHOLDERS['?'], self::URL_PLACEHOLDERS['&'] ], $url );
 	}
 
 }

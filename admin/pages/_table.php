@@ -18,26 +18,26 @@ $order      = ( !empty($_GET['order']) && in_array( strtoupper($_GET['order']), 
 $paged      = !empty($_GET['paged']) ? intval($_GET['paged']) : 1;
 $limit      = 20;
 $offset     = ($paged-1) * $limit;
-$search_query = isset($_GET['kcc_search']) ? $_GET['kcc_search'] : '';
+$search_query = isset($_GET['kcc_search']) ? trim( $_GET['kcc_search'] ) : '';
 
 $_LIMIT    = 'LIMIT '. $wpdb->prepare("%d, %d", $offset, $limit ); // to insure
 $_ORDER_BY = 'ORDER BY '. sprintf('%s %s', sanitize_key($order_by), sanitize_key($order) ); // to insure
 
 if( $search_query ){
 	// clear $_LIMIT if in original query there is no search query, or it differs from current search query
-	if( $reff = & $_SERVER['HTTP_REFERER'] ){
-		$reffdata = array();
+	if( $reff = &$_SERVER['HTTP_REFERER'] ){
+		$reffdata = [];
 		wp_parse_str( parse_url( $reff, PHP_URL_QUERY ), $reffdata );
-		if( empty($reffdata['kcc_search']) || $reffdata['kcc_search'] !== $search_query ){
+		if( empty( $reffdata['kcc_search'] ) || $reffdata['kcc_search'] !== $search_query ){
 			$_LIMIT = '';
 		}
 	}
 
 	$search_query = wp_unslash( $search_query );
 	$s = '%' . $wpdb->esc_like( $search_query ) . '%';
-	$sql = $wpdb->prepare("SELECT * FROM $wpdb->kcc_clicks WHERE link_url LIKE %s OR link_name LIKE %s $_ORDER_BY $_LIMIT", $s, $s );
+	$sql = $wpdb->prepare( "SELECT * FROM $wpdb->kcc_clicks WHERE link_url LIKE %s OR link_name LIKE %s $_ORDER_BY $_LIMIT", $s, $s );
 }
-else {
+else{
 	$sql = "SELECT * FROM $wpdb->kcc_clicks $_ORDER_BY $_LIMIT";
 }
 
@@ -150,11 +150,11 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 			] );
 			?>
 			<tr <?= $alt?>>
-				<th scope="row" class="check-column"><input type="checkbox" name="delete_link_id[]" value="<?= intval($link->link_id) ?>" /></th>
+				<th scope="row" class="check-column"><input type="checkbox" name="delete_link_ids[]" value="<?= intval($link->link_id) ?>" /></th>
 
 				<td>
 					<a href="<?= esc_url( $link->link_url ) ?>">
-						<img title="<?php _e('Link', 'kama-clic-counter') ?>" class="icon" src="<?= plugin()->counter->get_url_icon( $link->link_url ) ?>" />
+						<img title="<?= __('Link', 'kama-clic-counter') ?>" class="icon" src="<?= Helpers::get_url_icon( $link->link_url ) ?>" />
 					</a>
 				</td>
 

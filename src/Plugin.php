@@ -37,6 +37,9 @@ class Plugin {
 	/** @var Counter */
 	public $counter;
 
+	/** @var Download_Shortcode */
+	public $download_shortcode;
+
 	public function __construct( string $main_file_path ) {
 
 		$this->set_wpdb_tables();
@@ -79,19 +82,21 @@ class Plugin {
 			$this->admin->init();
 		}
 
-		$this->counter = new Counter();
+		$this->counter = new Counter( $this->opt );
 		$this->counter->init();
 
 		// admin_bar
-		if( $this->opt->toolbar_item && plugin()->manage_access ){
+		if( $this->opt->toolbar_item && $this->manage_access ){
 			add_action( 'admin_bar_menu', [ $this, 'add_toolbar_menu' ], 90 );
 		}
 
-		if( $this->opt->widget ){
-			add_action( 'widgets_init', function () {
-				register_widget( Widget::class );
-			} );
-		}
+		Widget::init();
+
+		$this->download_shortcode = new Download_Shortcode();
+		$this->download_shortcode->init();
+
+		$Content_Replacer = new Content_Replacer();
+		$Content_Replacer->init();
 	}
 
 	public function set_wpdb_tables() {

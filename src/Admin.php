@@ -123,7 +123,7 @@ class Admin {
 			$this->msg = __( 'Settings reseted to defaults', 'kama-clic-counter' );
 		}
 		// update_link
-		elseif( isset($_POST['update_link']) ){
+		elseif( isset( $_POST['update_link'] ) ){
 
 			if( ! wp_verify_nonce( $_nonce, 'update_link' ) && check_admin_referer( 'update_link' ) ){
 				$this->msg = 'error: nonce failed';
@@ -153,8 +153,8 @@ class Admin {
 				? __( 'Link updated!', 'kama-clic-counter' )
 				: 'error: ' . __( 'Failed to update link!', 'kama-clic-counter' );
 		}
-		// bulk_action delete_links
-		elseif( isset( $_POST['delete_link_id'] ) ){
+		// bulk delete_links
+		elseif( isset( $_POST['delete_link_ids'] ) ){
 
 			if( ! wp_verify_nonce( $_nonce, 'bulk_action' ) && check_admin_referer( 'bulk_action' ) ){
 				$this->msg = 'error: nonce failed';
@@ -162,14 +162,14 @@ class Admin {
 				return;
 			}
 
-			if( $this->delete_links( $_POST['delete_link_id'] ) ){
+			if( $this->delete_links( $_POST['delete_link_ids'] ) ){
 				$this->msg = __( 'Selected objects deleted', 'kama-clic-counter' );
 			}
 			else{
 				$this->msg = __( 'Nothing was deleted!', 'kama-clic-counter' );
 			}
 		}
-		// delete single link handler
+		// delete single link
 		elseif( isset( $_GET['delete_link'] ) ){
 
 			if( ! wp_verify_nonce( $_nonce, 'delete_link' ) ){
@@ -213,7 +213,7 @@ class Admin {
 	 *
 	 * @return int|false
 	 */
-	function update_link( $link_id, $data ) {
+	private function update_link( $link_id, $data ) {
 		global $wpdb;
 
 		$link_id = (int) $link_id;
@@ -232,16 +232,18 @@ class Admin {
 		return $query ?? false;
 	}
 
-	function delete_link_url( $link_id ){
+	public function delete_link_url( $link_id ): string {
 		return add_query_arg( [ 'delete_link' => $link_id, '_wpnonce' =>wp_create_nonce('delete_link') ] );
 	}
 
 	/**
-	 * Удаление ссылок из БД по переданному массиву ID или ID ссылки
-	 * @param  array/int [$array_ids = array()] ID ссылок котоыре нужно удалить
-	 * @return boolean  Удалено ли
+	 * Удаление ссылок из БД по переданному массиву ID или ID ссылки.
+	 *
+	 * @param  array|int $array_ids ID ссылок котоыре нужно удалить.
+	 *
+	 * @return bool  Удалено ли?
 	 */
-	function delete_links( $array_ids = [] ){
+	private function delete_links( $array_ids = [] ): bool {
 		global $wpdb;
 
 		$array_ids = array_filter( array_map( 'intval', (array) $array_ids ) );
@@ -253,8 +255,10 @@ class Admin {
 		return $wpdb->query( "DELETE FROM $wpdb->kcc_clicks WHERE link_id IN (" . implode( ',', $array_ids ) . ")" );
 	}
 
-	## Удаление ссылки по ID вложения
-	function delete_link_by_attach_id( $attach_id ){
+	/**
+	 * Удаление ссылки по ID вложения.
+	 */
+	public function delete_link_by_attach_id( $attach_id ){
 		global $wpdb;
 
 		if( ! $attach_id ){
@@ -264,8 +268,10 @@ class Admin {
 		return $wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->kcc_clicks WHERE attach_id = %d", $attach_id ) );
 	}
 
-	## Обновление ссылки, если обновляется вложение
-	function update_link_with_attach( $attach_id ){
+	/**
+	 * Обновление ссылки, если обновляется вложение.
+	 */
+	public function update_link_with_attach( $attach_id ){
 		global $wpdb;
 
 		$attdata = get_post( $attach_id );

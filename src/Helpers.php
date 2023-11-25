@@ -22,4 +22,29 @@ class Helpers {
 		);
 	}
 
+	/**
+	 * Gets a link to the icon image by the extension in the passed URL.
+	 *
+	 * @param $url
+	 *
+	 * @return mixed|null
+	 */
+	public static function get_url_icon( $url ){
+
+		$url_path = parse_url( $url, PHP_URL_PATH );
+
+		if( preg_match( '~\.([a-zA-Z0-9]{1,8})(?=$|\?.*)~', $url_path, $m ) ){
+			$icon_name = $m[1] . '.png';
+		}
+		else{
+			$icon_name = 'default.png';
+		}
+
+		$icon_name = file_exists( plugin()->dir . "/assets/icons/$icon_name" ) ? $icon_name : 'default.png';
+
+		$icon_url = plugin()->url . "/assets/icons/$icon_name";
+
+		return apply_filters( 'get_url_icon', $icon_url, $icon_name );
+	}
+
 }

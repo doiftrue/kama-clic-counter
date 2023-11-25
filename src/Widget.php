@@ -12,6 +12,17 @@ class Widget extends \WP_Widget {
 		);
 	}
 
+	public static function init(){
+
+		if( ! plugin()->opt->widget ){
+			return;
+		}
+
+		add_action( 'widgets_init', function () {
+			register_widget( self::class );
+		} );
+	}
+
 	/**
 	 * Вывод виджета на Фронте
 	 *
@@ -98,7 +109,7 @@ class Widget extends \WP_Widget {
 			$tpl = str_replace( '[link_url]', esc_url( $_url ), $tpl );
 
 			// меняем остальное
-			$lis[] = '<li>' . plugin()->counter->tpl_replace_shortcodes( $tpl, $link ) . '</li>' . "\n";
+			$lis[] = '<li>' . plugin()->download_shortcode->tpl_replace_shortcodes( $tpl, $link ) . '</li>' . "\n";
 		}
 
 		$wg_content = '

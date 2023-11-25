@@ -40,7 +40,7 @@ if( ! $link ){
 <form style="position:relative;width:900px;" method="post" action="">
 	<?php
 	wp_nonce_field('update_link');
-	$icon_link = plugin()->counter->get_url_icon( $link->link_url );
+	$icon_link = Helpers::get_url_icon( $link->link_url );
 	?>
 
 	<input type="hidden" name="local_referer" value="<?= esc_attr($referer) ?>" />
