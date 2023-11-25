@@ -82,11 +82,11 @@ if( ! $link ){
 	<input type='hidden' name='up[link_id]' value='<?= $edit_link_id ?>' />
 	<input type='hidden' name='up[attach_id]' value='<?= $link->attach_id ?>' />
 
-	<p>
+	<p style="margin-top: 3rem">
 		<input type='submit' name='update_link' class='button-primary' value='<?php _e('Save changes', 'kama-clic-counter') ?>' />
 		&nbsp;&nbsp;&nbsp;&nbsp;
-		<a class="button" href="<?= esc_url( $this->delete_link_url( $link->link_id ) ) ?>" onclick="return confirm('<?php _e('Are you sure?', 'kama-clic-counter') ?>');">
-			<?php _e('Delete', 'kama-clic-counter') ?>
+		<a class="button kcc-alert-button" href="<?= esc_url( $this->delete_link_url( $link->link_id ) ) ?>" onclick="return confirm('<?= __('Sure to delete it?', 'kama-clic-counter') ?>');">
+			<?= __('Delete', 'kama-clic-counter') ?>
 		</a>
 	</p>
 </form>

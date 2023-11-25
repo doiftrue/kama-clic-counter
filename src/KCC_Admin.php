@@ -191,12 +191,13 @@ class KCC_Admin {
 
 		$url = admin_url( 'admin.php?page=' . plugin()->slug );
 
-		if( 'settings' === $args ){
-			$url = add_query_arg( [ 'subpage' => 'settings' ], $url );
-		}
-
 		if( $args ){
-			$url = add_query_arg( $args, $url );
+			if( 'settings' === $args ){
+				$url = add_query_arg( [ 'subpage' => 'settings' ], $url );
+			}
+			else {
+				$url = add_query_arg( $args, $url );
+			}
 		}
 
 		return $url;

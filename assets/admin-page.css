@@ -11,3 +11,5 @@
 .widefat a:hover .icon{ opacity:1; }
 .kcc_search_input{ margin:7px 0 0 0; height:25px; width:450px; transition:width 1s!important;-webkit-transition:width 1s!important; }
 .kcc_search_input:focus{ width:750px; }
+
+.button.kcc-alert-button{ border-color: tomato; color: tomato; }

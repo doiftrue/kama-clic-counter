@@ -47,7 +47,7 @@ $edit_link_id = (int) ( $_GET['edit_link'] ?? 0 )
 			<a class="nav-tab <?= ( ( ! $subpage && ! $edit_link ) ? 'nav-tab-active' : '' ) ?>" href="<?= $this->admin_page_url() ?>">
 				<?= __( 'List', 'kama-clic-counter' ) ?>
 			</a>
-			<?= ( plugin()->admin_access ? $settings_link : '' ) ?>
+			<?= plugin()->admin_access ? $settings_link : '' ?>
 			<?= $edit_link ?>
 		</h1>
 		<?php
