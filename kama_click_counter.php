@@ -27,8 +27,6 @@ define( 'KCC_URL', plugin_dir_url( __FILE__ ) );
 define( 'KCC_NAME', basename( KCC_PATH ) );
 
 require_once KCC_PATH . 'autoload.php';
-require_once KCC_PATH . 'src/legacy/backcompat.php';
-
 
 register_activation_hook( __FILE__, [ KCCounter(), 'activation' ] );
 
