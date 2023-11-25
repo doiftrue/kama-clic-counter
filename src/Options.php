@@ -82,21 +82,21 @@ class Options {
 					.kcc_block .kcc-edit-link{ position:absolute; top:0; right:.2em; }
 					.kcc_block:after{ content:""; display:table; clear:both; }
 				</style>',
+			// css класс для простых ссылок (если не указано, то этот функционал отключен).
 			'links_class' => 'count',
-			// проверять class в простых ссылках
-			'add_hits'             => '',
 			// may be: '', 'in_title' or 'in_plain' (for simple links)
+			'add_hits'             => '',
 			'in_post'              => 1,
-			'hide_url'             => false,
 			// прятать ссылку или нет?
-			'widget'               => 1,
+			'hide_url'             => false,
 			// включить виджет для WordPress
-			'toolbar_item'         => 1,
+			'widget'               => 1,
 			// выводить ссылку на статистику в Админ баре?
-			'access_roles'         => [],
+			'toolbar_item'         => 1,
 			// Название ролей, кроме администратора, которым доступно упраление плагином.
-			'url_exclude_patterns' => '',
+			'access_roles'         => [],
 			// подстроки. Если ссылка имеет указанную подстроку, то не считать клик на нее...
+			'url_exclude_patterns' => '',
 		];
 
 		$array['download_tpl'] = trim( preg_replace( '~^\t{4}~m', '', $array['download_tpl'] ) );

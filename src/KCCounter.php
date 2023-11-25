@@ -113,7 +113,7 @@ class KCCounter {
 
 		ob_start();
 		?>
-		<!-- KCCounter -->
+		<!-- Kama Click Counter -->
 		<script>
 		(function(){
 

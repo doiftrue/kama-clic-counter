@@ -67,6 +67,13 @@ RewriteRule \.(zip|7z|exe)$ - [NC,F,L]
 
 == Changelog ==
 
+= 4.0.0 =
+* Requires PHP >= 7.0.
+* Backcompat removed.
+* Code refactored.
+* PHP class autoloader added.
+* PHP namespaces added.
+
 = 3.6.10 =
 * Minor improvemets.
 

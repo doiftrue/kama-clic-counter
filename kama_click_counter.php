@@ -16,6 +16,8 @@
  * Version: 3.6.10
  */
 
+namespace KamaClickCounter;
+
 defined( 'ABSPATH' ) || exit;
 
 define( 'KCC_FILE', __FILE__ );
@@ -24,9 +26,7 @@ define( 'KCC_PATH', plugin_dir_path( __FILE__ ) );
 define( 'KCC_URL', plugin_dir_url( __FILE__ ) );
 define( 'KCC_NAME', basename( KCC_PATH ) );
 
-require_once KCC_PATH . 'src/Options.php';
-require_once KCC_PATH . 'src/KCCounter.php';
-require_once KCC_PATH . 'src/KCCounter_Admin.php';
+require_once KCC_PATH . 'autoload.php';
 require_once KCC_PATH . 'src/legacy/backcompat.php';
 
 
@@ -34,11 +34,8 @@ register_activation_hook( __FILE__, [ KCCounter(), 'activation' ] );
 
 add_action( 'plugins_loaded', [ KCCounter(), 'init' ] );
 
-/**
- * @return \KamaClickCounter\KCCounter
- */
-function KCCounter() {
-	return \KamaClickCounter\KCCounter::instance();
+function KCCounter(): KCCounter {
+	return KCCounter::instance();
 }
 
 
