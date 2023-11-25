@@ -33,9 +33,8 @@ class KCC_Admin {
 	}
 
 	public function upgrade(){
-		require_once plugin()->dir . '/admin/upgrade.php';
-
-		kccount_upgrade_init();
+		$upgrader = new Upgrader();
+		$upgrader->init();
 	}
 
 	# Ссылки на страницы статистики и настроек со страницы плагинов
