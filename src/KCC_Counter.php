@@ -11,49 +11,20 @@ class KCC_Counter {
 	/** @var Options */
 	public $opt;
 
-	/** @var KCC_Admin */
-	public $admin;
-
 	public static $q_symbol_alts = [
 		'?' => '__QUESTION__',
 		'&' => '__AMPERSAND__',
 	];
 
-	public $admin_access;
-
-	public static function instance() {
-		static $instance;
-
-		$instance || $instance = new self();
-
-		return $instance;
-	}
-
 	public function __construct(){
 
-		self::set_wpdb_tables();
-
-		$this->opt = new Options();
+		$this->opt = plugin()->opt;
 	}
 
 	public function init() {
 
-		$this->set_admin_access();
-
-		if( is_admin() ){
-			$this->admin = new KCC_Admin( $this->opt );
-			$this->admin->init();
-		}
-
-		load_plugin_textdomain( 'kama-clic-counter', false, KCC_NAME . '/languages' );
-
 		if( $this->opt->links_class ){
 			add_filter( 'the_content', [ $this, 'modify_links' ] );
-		}
-
-		// admin_bar
-		if( $this->opt->toolbar_item && $this->admin_access ){
-			add_action( 'admin_bar_menu', [ $this, 'add_toolbar_menu' ], 90 );
 		}
 
 		add_action( 'wp_footer', [ $this, 'footer_js' ], 99 );
@@ -62,41 +33,6 @@ class KCC_Counter {
 
 		add_filter( 'init', [ $this, 'redirect' ], 0 );
 
-		if( $this->opt->widget ){
-			require_once KCC_PATH . 'src/KCC_Widget.php';
-		}
-	}
-
-	/**
-	 * @return void
-	 */
-	private function set_admin_access() {
-
-		$this->admin_access = apply_filters( 'kcc_admin_access', null );
-
-		if( $this->admin_access !== null ){
-			return;
-		}
-
-		$this->admin_access = current_user_can( 'manage_options' );
-
-		if( ! $this->admin_access && $this->opt->access_roles ){
-
-			foreach( wp_get_current_user()->roles as $role ){
-
-				if( in_array( $role, (array) $this->opt->access_roles, 1 ) ){
-					$this->admin_access = true;
-					break;
-				}
-			}
-		}
-	}
-
-	public static function set_wpdb_tables() {
-		global $wpdb;
-
-		$wpdb->tables[] = 'kcc_clicks';
-		$wpdb->kcc_clicks = $wpdb->prefix . 'kcc_clicks';
 	}
 
 	static function alts_to_q_symbol( $url ) {
@@ -107,113 +43,46 @@ class KCC_Counter {
 		return str_replace( [ '?', '&' ], [ self::$q_symbol_alts['?'], self::$q_symbol_alts['&'] ], $url );
 	}
 
-	# обавка для подсчета ссылок на всем сайте
+	/**
+	 * Скрипт для подсчета ссылок на всем сайте.
+	 *
+	 * @return void
+	 */
 	public function footer_js() {
-		$kcc_url_patt = $this->get_kcc_url( '{url}', '{in_post}', '{download}' );
+		$js = strtr(
+			file_get_contents( plugin()->dir . '/assets/counter.js' ),
+			[
+				'{kcckey}'      => self::COUNT_KEY,
+				'{pidkey}'      => self::PID_KEY,
+				'{urlpatt}'     => $this->get_kcc_url( '{url}', '{in_post}', '{download}' ),
+				'{aclass}'      => sanitize_html_class( $this->opt->links_class ),
+				'{questSymbol}' => self::$q_symbol_alts['?'],
+				'{ampSymbol}'   => self::$q_symbol_alts['&'],
+			]
+		);
 
-		ob_start();
+		$js = preg_replace( '~[^:]//[^\n]+|[\t\n\r]~', '', $js ); // remove comments, \t\r\n
+		$js = preg_replace( '~[ ]{2,}~', ' ', $js );
 		?>
-		<!-- Kama Click Counter -->
-		<script>
-		(function(){
-
-			let kcckey  = '<?= self::COUNT_KEY ?>';
-			let pidkey  = '<?= self::PID_KEY ?>';
-			let urlpatt = '<?= $kcc_url_patt ?>';
-			let aclass  = '<?= sanitize_html_class( $this->opt->links_class ) ?>';
-			let q_symbol_alts__fn = function(url){
-				return url
-					.replace( /[?]/g, '<?= self::$q_symbol_alts['?'] ?>' )
-					.replace( /[&]/g, '<?= self::$q_symbol_alts['&'] ?>' );
-			};
-
-			// hide ugly kcc url
-			document.addEventListener( 'mouseover', function( ev ){
-				let a = ev.target;
-
-				// test `a[href*="'+ kcckey +'"]` selector
-				if( 'A' !== a.tagName || a.href.indexOf( kcckey ) === -1 ){
-					return;
-				}
-
-				let realurl  = a.href.match( new RegExp( kcckey +'=(.*)' ) )[1];
-
-				if( realurl ){
-					if( parseInt( realurl ) )
-						realurl = '/#download'+ realurl;
-
-					a.dataset.kccurl = a.href.replace( realurl, q_symbol_alts__fn(realurl) ); // before a.href !
-					a.href = realurl;
-				}
-
-			});
-
-			let clickEventHandler = function( ev ){
-				let a = ev.target;
-
-				if( 'A' !== ev.target.tagName ){
-					return;
-				}
-
-				// already set before - `a[data-kccurl]`
-				if( a.dataset.kccurl ){
-					a.href = a.dataset.kccurl;
-					return;
-				}
-
-				let href = a.href;
-
-				// modified link
-				if( href.indexOf( kcckey ) !== -1 ){
-					let url = href.match( new RegExp( kcckey +'=(.*)' ) )[1];
-
-					if( url ){
-						if( !! parseInt(url) )
-							url = '/#download'+ url;
-
-						a.href = url;
-						a.dataset.kccurl = href.replace( url, q_symbol_alts__fn(url) );
-
-					}
-				}
-				// count class
-				else if( a.classList.contains( aclass ) ){
-					let pid  = a.dataset[ pidkey ] || '';
-
-					let kccurl;
-					kccurl = urlpatt.replace( '{in_post}', pid );
-					kccurl = kccurl.replace( '{download}', ( a.dataset.kccdownload ? 1 : '' ) );
-					kccurl = kccurl.replace( '{url}', q_symbol_alts__fn( href ) );
-
-					a.dataset.kccurl = kccurl;
-				}
-
-				a.dataset.kccurl && ( a.href = a.dataset.kccurl );
-
-			};
-
-			document.addEventListener( 'click', clickEventHandler );
-			document.addEventListener( 'mousedown', clickEventHandler );
-			document.addEventListener( 'contextmenu ', clickEventHandler );
-
-		})();
-		</script>
+		<script id="kama-click-counter"><?= $js ?></script>
 		<?php
-
-		$scr = ob_get_clean();
-		$scr = preg_replace( '~[^:]//[^\n]+|[\t\n\r]~', '', $scr ); // remove: comments, \t\r\n
-		$scr = preg_replace( '~[ ]{2,}~', ' ', $scr );
-
-		echo "$scr\n";
 	}
 
-	# получает ссылку по которой будут считаться клики
-	public function get_kcc_url( $url = '', $in_post = 0, $download = 0 ) {
+	/**
+	 * Получает ссылку по которой будут считаться клики.
+	 *
+	 * @param string     $url       string or placeholder `{url}`
+	 * @param int|string $in_post   1/0 of placeholder `{in_post}`.
+	 * @param int|string $download  1/0 of placeholder `{download}`.
+	 *
+	 * @return mixed|null
+	 */
+	public function get_kcc_url( string $url = '', $in_post = '', $download = '' ) {
 
-		// порядок имеет значение...
+		// order matters...
 		$vars = [
-			'download'      => $download,
-			self::PID_KEY   => $in_post,
+			'download'      => sanitize_text_field( $download ),
+			self::PID_KEY   => sanitize_text_field( $in_post ),
 			self::COUNT_KEY => self::q_symbol_to_alts( $url ),
 		];
 
@@ -221,19 +90,20 @@ class KCC_Counter {
 			unset( $vars[ self::PID_KEY ] );
 		}
 
-		$kcc_url_data = [];
+		$kcc_url_params = [];
 		foreach( $vars as $key => $val ){
+			$val = trim( $val );
 			if( $val ){
-				$kcc_url_data[] = $key . '=' . trim( $val );
+				$kcc_url_params[] = "$key=$val";
 			}
 		}
 
-		$kcc_url = home_url() . '?' . implode( '&', $kcc_url_data );
+		$kcc_url = home_url() . '?' . implode( '&', $kcc_url_params );
 		if( $this->opt->hide_url ){
 			$kcc_url = $this->hide_link_url( $kcc_url );
 		}
 
-		return apply_filters( 'get_kcc_url', $kcc_url );
+		return apply_filters( 'get_kcc_url', $kcc_url, $this->opt );
 	}
 
 	/**
@@ -260,19 +130,16 @@ class KCC_Counter {
 		return preg_replace( '~' . self::COUNT_KEY . '=.*~', self::COUNT_KEY . "=$link->link_id", $kcc_url );
 	}
 
-	# link in toolbar
-	public function add_toolbar_menu( $toolbar ){
-
-		$toolbar->add_menu( [
-			'id'    => 'kcc',
-			'title' => 'Click Counter',
-			'href' => admin_url( 'admin.php?page=' . KCC_NAME ),
-		] );
-	}
-
 	// COUNTING PART --------
 
-	# add clicks by given url
+	/**
+	 * Adds clicks (count click) by given url.
+	 *
+	 * @param array|string $kcc_url
+	 * @param bool         $count
+	 *
+	 * @return bool|int
+	 */
 	public function do_count( $kcc_url, $count = true ) {
 		global $wpdb;
 
@@ -376,7 +243,7 @@ class KCC_Counter {
 		// insert
 		else{
 
-			// create data to add to DB
+			// data to add to DB
 			$data = array_merge( [
 				'attach_id'        => 0,
 				'in_post'          => $args['in_post'],
@@ -399,8 +266,7 @@ class KCC_Counter {
 			if( false !== stripos( $data['link_name'], 'xn--' ) ){
 				$host = parse_url( $data['link_url'], PHP_URL_HOST );
 
-				require_once KCC_PATH . 'src/php-punycode/idna_convert.php';
-				$ind = new idna_convert();
+				$ind = new \KamaClickCounter\libs\idna_convert();
 
 				$data['link_name'] = str_replace( $host, $ind->decode( $host ), $data['link_name'] );
 			}
@@ -437,9 +303,15 @@ class KCC_Counter {
 
 			$data = apply_filters( 'kcc_insert_link_data', $data, $args );
 
+			// sanitize data before save
+			$data['link_name'] = sanitize_text_field( $data['link_name'] );
+
 			$return = $wpdb->insert( $wpdb->kcc_clicks, $data ) ? $wpdb->insert_id : false;
 		}
 
+		/**
+		 * Allows to do something after count.
+		 */
 		do_action( 'kcc_count_after', $args, $updated, $data );
 
 		$this->clear_link_cache( $kcc_url );
@@ -447,20 +319,28 @@ class KCC_Counter {
 		return $return;
 	}
 
-	# redirect to link url
-	public function redirect(){
+	/**
+	 * Redirect to link url.
+	 *
+	 * @return void
+	 */
+	public function redirect() {
 
-		// to override a function
+		/**
+		 * Allows to override counting function.
+		 */
 		if( apply_filters( 'kcc_redefine_redirect', false, $this ) ){
 			return;
 		}
 
-		if( empty( $_GET[ self::COUNT_KEY ] ) || ! $url = $_GET[ self::COUNT_KEY ] ){
+		$url = $_GET[ self::COUNT_KEY ] ?? '';
+		if( ! $url ){
 			return;
 		}
 
 		$parsed = $this->parce_kcc_url( $_SERVER['REQUEST_URI'] );
-		if( ! $url = $parsed[ self::COUNT_KEY ] ){
+		$url = $parsed[ self::COUNT_KEY ];
+		if( ! $url ){
 			return;
 		}
 
@@ -474,15 +354,16 @@ class KCC_Counter {
 				$url = $link->link_url;
 			}
 			else{
-				return trigger_error( sprintf( 'Error: kcc link with id %s not found.', $url ) );
+				trigger_error( sprintf( 'Error: kcc link with id %s not found.', $url ) );
+				return;
 			}
 		}
 
 		// redirect
 		if( headers_sent() ){
-			print "<script>location.replace('". esc_url($url) ."');</script>";
+			print "<script>location.replace('" . esc_url( $url ) . "');</script>";
 		}
-		else {
+		else{
 
 			// not to remove spaces in such URL: '?Subject=This has spaces' // thanks to: Mark Carson
 			$esc_url = esc_url( $url, null, 'not_display' );
@@ -496,14 +377,10 @@ class KCC_Counter {
 	/**
 	 * Разибирает KСС УРЛ.
 	 *
-	 * Конвертирует относительный путь "/blog/dir/file" в абсолютный (от корня сайта) и чистит УРЛ
-	 * Расчитан на прием грязных/неочищенных URL.
-	 *
-	 * @param string $kcc_url  Kcc УРЛ.
-	 *
-	 * @return array параметры переданой строки
+	 * Конвертирует относительный путь "/blog/dir/file" в абсолютный
+	 * (от корня сайта) и чистит УРЛ. Расчитан на прием грязных (неочищенных) URL.
 	 */
-	public function parce_kcc_url( $kcc_url ) {
+	public function parce_kcc_url( string $kcc_url ): array {
 
 		preg_match( '/\?(.+)$/', $kcc_url, $m ); // get kcc url query args
 		$kcc_query = $m[1]; // parse_url( $kcc_url, PHP_URL_QUERY );
@@ -592,7 +469,8 @@ class KCC_Counter {
 			$url = "http:$url";
 		}
 
-		if( ! $html = wp_remote_retrieve_body( wp_remote_get( $url ) ) ){
+		$html = wp_remote_retrieve_body( wp_remote_get( $url ) );
+		if( ! $html ){
 			$html = @ file_get_contents( $url, false, null, 0, 10000 );
 		}
 
@@ -603,8 +481,12 @@ class KCC_Counter {
 		return '';
 	}
 
-	# Получает размер файла по сылке
-	static function file_size( $url ){
+	/**
+	 * Получает размер файла по сылке.
+	 *
+	 * @return string Eg: `136.6 KB` or empty string if no size determined.
+	 */
+	public static function file_size( string $url ): string {
 
 		//$url = urlencode( $url );
 		$size = null;
@@ -616,17 +498,20 @@ class KCC_Counter {
 			$path_part = str_replace( $_home_url, '', self::del_http_protocol( $url ) );
 			$file = wp_normalize_path( ABSPATH . $path_part );
 			// maybe WP in subfolder
-			if( ! file_exists( $file ) )
+			if( ! file_exists( $file ) ){
 				$file = wp_normalize_path( dirname( ABSPATH ) . $path_part );
+			}
 
 			$size = @ filesize( $file );
 		}
+
 		// curl enabled
-		if( ! $size && function_exists('curl_version') ){
+		if( ! $size && function_exists( 'curl_version' ) ){
 			$size = self::curl_get_file_size( $url );
 		}
+
 		// get_headers
-		if( ! $size && function_exists('get_headers') ){
+		if( ! $size && function_exists( 'get_headers' ) ){
 			$headers = @ get_headers( $url, 1 );
 			$size = @ $headers['Content-Length'];
 		}
@@ -634,7 +519,7 @@ class KCC_Counter {
 		$size = (int) $size;
 
 		if( ! $size ){
-			return 0;
+			return '';
 		}
 
 		$i = 0;
@@ -650,13 +535,11 @@ class KCC_Counter {
 	/**
 	 * Returns the size of a file without downloading it.
 	 *
-	 * @param $url - The location of the remote file to download. Cannot
-	 * be null or empty.
+	 * @param string $url The location of the remote file to download. Cannot be null or empty.
 	 *
-	 * @return int|false The size of the file referenced by $url, or false if the size
-	 * could not be determined.
+	 * @return int The size of the file referenced by $url, or 0 if the size could not be determined.
 	 */
-	static function curl_get_file_size( $url ){
+	public static function curl_get_file_size( string $url ): int {
 
 		// $url не может быть без протокола http
 		if( preg_match( '~^//~', $url ) ){
@@ -664,6 +547,7 @@ class KCC_Counter {
 		}
 
 		$curl = curl_init( $url );
+
 		// Issue a HEAD request and follow any redirects.
 		curl_setopt( $curl, CURLOPT_NOBODY, true );
 		curl_setopt( $curl, CURLOPT_HEADER, true );
@@ -675,7 +559,7 @@ class KCC_Counter {
 		curl_close( $curl );
 
 		if( ! $data ){
-			return false;
+			return 0;
 		}
 
 		// http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
@@ -685,6 +569,7 @@ class KCC_Counter {
 			return (int) $match[2]; // Content-Length
 		}
 
+		return 0;
 	}
 
 	# TEXT REPLACEMENT PART -------------
@@ -755,14 +640,14 @@ class KCC_Counter {
 			$icon_name = 'default.png';
 		}
 
-		$icon_name = file_exists( KCC_PATH . "icons/$icon_name" ) ? $icon_name : 'default.png';
+		$icon_name = file_exists( plugin()->dir . "/icons/$icon_name" ) ? $icon_name : 'default.png';
 
-		$icon_url = KCC_URL . "icons/$icon_name";
+		$icon_url = plugin()->url . "/icons/$icon_name";
 
 		return apply_filters( 'get_url_icon', $icon_url, $icon_name );
 	}
 
-	public function download_shortcode( $atts = [] ) {
+	public function download_shortcode( $atts = [] ): string {
 		global $post;
 
 		// белый список параметров и значения по умолчанию
@@ -787,7 +672,7 @@ class KCC_Counter {
 		}
 
 		$tpl = $this->opt->download_tpl;
-		$tpl = str_replace('[link_url]', esc_url($kcc_url), $tpl );
+		$tpl = str_replace( '[link_url]', esc_url( $kcc_url ), $tpl );
 
 		$atts['title'] && ( $tpl = str_replace( '[link_title]', $atts['title'], $tpl ) );
 		$atts['desc'] && ( $tpl = str_replace( '[link_description]', $atts['desc'], $tpl ) );
@@ -805,10 +690,10 @@ class KCC_Counter {
 	 */
 	public function tpl_replace_shortcodes( $tpl, $link ) {
 
-		$tpl = str_replace( [ '[icon_url]', '[edit_link]' ], [
-			KCCounter()->get_url_icon( $link->link_url ),
-			KCCounter()->edit_link_url( $link->link_id ),
-		], $tpl );
+		$tpl = strtr( $tpl, [
+			'[icon_url]'  => plugin()->counter->get_url_icon( $link->link_url ),
+			'[edit_link]' => plugin()->counter->edit_link_url( $link->link_id ),
+		] );
 
 		if( preg_match( '@\[link_date:([^\]]+)\]@', $tpl, $date ) ){
 			$tpl = str_replace( $date[0], apply_filters( 'get_the_date', mysql2date( $date[1], $link->link_date ) ), $tpl );
@@ -882,15 +767,18 @@ class KCC_Counter {
 		$this->get_link( $kcc_url, 'clear_cache' );
 	}
 
-	# returns the URL on the edit links in the admin
-	public function edit_link_url( $link_id, $edit_text = '' ) {
+	/**
+	 * Returns the URL on the edit links in the admin
+	 */
+	public function edit_link_url( int $link_id, string $edit_text = '' ): string {
 
-		if( ! $this->admin_access ){
+		if( ! plugin()->manage_access ){
 			return '';
 		}
 
 		return sprintf( '<a class="kcc-edit-link" href="%s">%s</a>',
-			admin_url( 'admin.php?page=' . KCC_NAME . '&edit_link=' . $link_id ), ( $edit_text ?: '✎' )
+			admin_url( 'admin.php?page=' . plugin()->slug . "&edit_link=$link_id" ),
+			( $edit_text ?: '✎' )
 		);
 	}
 

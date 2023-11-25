@@ -1,13 +1,9 @@
 <?php
 
-add_action( 'widgets_init', 'kccount_register_widget' );
-function kccount_register_widget() {
-	register_widget( 'KCC_Widget' );
-}
+namespace KamaClickCounter;
 
-class KCC_Widget extends WP_Widget {
+class Widget extends \WP_Widget {
 
-	// Регистрация видежта используя основной класс
 	public function __construct() {
 		parent::__construct(
 			'kcc_widget',
@@ -17,13 +13,21 @@ class KCC_Widget extends WP_Widget {
 	}
 
 	/**
-	 * Вывод виджета во Фронт-энде
+	 * Вывод виджета на Фронте
 	 *
 	 * @param array $args  Аргументы виджета.
 	 * @param array $opts  Сохраненные данные из настроек
+	 *
+	 * @return void
 	 */
 	public function widget( $args, $opts ) {
 		global $wpdb;
+
+		if( ! $opts ){
+			echo '<p>Kama Click Counter Widget: No widget options saved. Save widget option to display it.</p>';
+
+			return;
+		}
 
 		$opts = (object) $opts;
 		$number = (int) $opts->number;
@@ -88,13 +92,13 @@ class KCC_Widget extends WP_Widget {
 				}
 			}
 			else{
-				$_url = KCCounter()->get_kcc_url( $link->link_url, $link->in_post, $link->downloads );
+				$_url = plugin()->counter->get_kcc_url( $link->link_url, $link->in_post, $link->downloads );
 			}
 
 			$tpl = str_replace( '[link_url]', esc_url( $_url ), $tpl );
 
 			// меняем остальное
-			$lis[] = '<li>' . KCCounter()->tpl_replace_shortcodes( $tpl, $link ) . '</li>' . "\n";
+			$lis[] = '<li>' . plugin()->counter->tpl_replace_shortcodes( $tpl, $link ) . '</li>' . "\n";
 		}
 
 		$wg_content = '
@@ -175,7 +179,7 @@ class KCC_Widget extends WP_Widget {
 		<p>
 			<?php _e('Out template:', 'kama-clic-counter' ); ?>
 			<textarea class="widefat" style="height:100px;" name="<?php echo $this->get_field_name( 'template' ); ?>"><?php echo $template; ?></textarea>
-			<?php echo kcc_tpl_available_tags(); ?>
+			<?php echo tpl_available_tags(); ?>
 		</p>
 
 		<p>
@@ -189,7 +193,7 @@ class KCC_Widget extends WP_Widget {
 	 * Saves the widget settings.
 	 * Here the data should be cleared and returned to be saved to the database.
 	 */
-	public function update( $new_instance, $old_instance ) {
+	public function update( $new_instance, $old_instance ): array {
 		$inst = [];
 		$inst['title'] = $new_instance['title'] ? strip_tags( $new_instance['title'] ) : '';
 		$inst['number'] = $new_instance['number'] ? (int) $new_instance['number'] : 5;

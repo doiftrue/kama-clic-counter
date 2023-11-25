@@ -3,6 +3,8 @@
  * to forse upgrade add '?kcc_force_upgrade' parameter to URL
  */
 
+namespace KamaClickCounter;
+
 function kccount_upgrade_init() {
 
 	$prev_ver = get_option( 'kcc_version' );
@@ -11,18 +13,13 @@ function kccount_upgrade_init() {
 		$prev_ver = '1.0';
 	}
 
-	if( $prev_ver === KCC_VER ){
+	if( $prev_ver === plugin()->info['version'] ){
 		return;
 	}
 
-	update_option( 'kcc_version', KCC_VER );
+	update_option( 'kcc_version', plugin()->info['version'] );
 
 	global $wpdb;
-
-	// обнволение структуры таблиц
-	//require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-	//$doe = dbDelta( dem_get_db_schema() );
-	//wp_die(print_r($doe));
 
 	$fields = $wpdb->get_results( "SHOW COLUMNS FROM $wpdb->kcc_clicks" );
 

@@ -4,10 +4,8 @@ namespace KamaClickCounter;
 
 /**
  * Available shotcodes in link templates.
- *
- * @return string
  */
-function kcc_tpl_available_tags() {
+function tpl_available_tags(): string {
 
 	$array = [
 		__( 'Shortcodes that can be used in template:', 'kama-clic-counter' ),
@@ -31,7 +29,6 @@ function kcc_tpl_available_tags() {
 	return str_replace( [ '[', ']' ], [ '<code>[', ']</code>' ], $out );
 }
 
-
 function get_clicks_per_day( $link ): float {
 	static $cur_time;
 	if( $cur_time === null ){
@@ -39,20 +36,4 @@ function get_clicks_per_day( $link ): float {
 	}
 
 	return round( ( (int) $link->link_clicks / ( ( $cur_time - strtotime( $link->link_date ) ) / ( 3600 * 24 ) ) ), 1 );
-}
-
-function kcc_admin_menu(): string {
-	$mainpage = admin_url( 'admin.php?page=' . KCC_NAME );
-
-	$edit_link = @ $_GET['edit_link'] ? '<a class="nav-tab nav-tab-active" href="#">' . __( 'Link editing', 'kama-clic-counter' ) . '</a>' : '';
-
-	return '
-	<h2 class="nav-tab-wrapper demenu">' . __( 'Kama Click Counter', 'kama-clic-counter' ) .
-	       '<br><br>' .
-	       '<a class="nav-tab ' . ( ( ! @ $_GET['subpage'] && ! @ $_GET['edit_link'] ) ? 'nav-tab-active' : '' ) . '" href="' . $mainpage . '">' . __( 'List', 'kama-clic-counter' ) . '</a>' .
-	       ( current_user_can( 'manage_options' ) ?
-		       '<a class="nav-tab ' . ( ( @ $_GET['subpage'] == 'settings' ) ? 'nav-tab-active' : '' ) . '" href="' . add_query_arg( [ 'subpage' => 'settings' ], $mainpage ) . '">' . __( 'Settings', 'kama-clic-counter' ) . '</a>'
-		       : '' ) .
-	       $edit_link .
-	       '</h2>';
 }

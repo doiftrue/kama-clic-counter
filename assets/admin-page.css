@@ -1,0 +1,13 @@
+.kcc_block{ padding:1em; }
+.kcc_block .blk{ margin:1em 0 2em; }
+
+.kcc_pagination{ max-width:50%; overflow:hidden; float:right; text-align:right; margin:-1em 0 1em; }
+.kcc_pagination a{ padding:2px 7px; margin:0px; text-decoration:none; }
+.kcc_pagination .current{ font-weight:bold; }
+
+.widefat tr:hover .hideb, .widefat td:hover .hideb{display:block;}
+.widefat th{white-space:nowrap;}
+.widefat .icon{ height:35px; opacity:0.7; }
+.widefat a:hover .icon{ opacity:1; }
+.kcc_search_input{ margin:7px 0 0 0; height:25px; width:450px; transition:width 1s!important;-webkit-transition:width 1s!important; }
+.kcc_search_input:focus{ width:750px; }

@@ -4,6 +4,9 @@ namespace KamaClickCounter;
 
 class KCC_Admin {
 
+	/** @var string */
+	public $msg = '';
+
 	/** @var Options */
 	private $opt;
 
@@ -13,25 +16,24 @@ class KCC_Admin {
 
 	public function init() {
 
-		if( ! KCCounter()->admin_access ){
+		if( ! plugin()->manage_access ){
 			return;
 		}
 
-		require KCC_PATH . 'admin/admin-functions.php';
-		require KCC_PATH . 'admin/mce/mce.php';
+		TinyMCE::init();
 
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
 
 		add_action( 'delete_attachment', [ $this, 'delete_link_by_attach_id' ] );
 		add_action( 'edit_attachment', [ $this, 'update_link_with_attach' ] );
 
-		add_filter( 'plugin_action_links_' . plugin_basename( KCC_FILE ), [ $this, 'plugins_page_links' ] );
+		add_filter( 'plugin_action_links_' . plugin()->basename, [ $this, 'plugins_page_links' ] );
 
 		add_filter( 'current_screen', [ $this, 'upgrade' ] );
 	}
 
 	public function upgrade(){
-		require_once KCC_PATH . 'admin/upgrade.php';
+		require_once plugin()->dir . '/admin/upgrade.php';
 
 		kccount_upgrade_init();
 	}
@@ -39,16 +41,16 @@ class KCC_Admin {
 	# Ссылки на страницы статистики и настроек со страницы плагинов
 	public function plugins_page_links( $actions ){
 
-		$actions[] = '<a href="admin.php?page=' . KCC_NAME . '&options">' . __( 'Settings', 'kama-clic-counter' ) . '</a>';
-		$actions[] = '<a href="admin.php?page=' . KCC_NAME . '">' . __( 'Statistics', 'kama-clic-counter' ) . '</a>';
+		$actions[] = sprintf( '<a href="%s">%s</a>', $this->admin_page_url( 'settings' ), __( 'Settings', 'kama-clic-counter' ) );
+		$actions[] = sprintf( '<a href="%s">%s</a>', $this->admin_page_url(), __( 'Statistics', 'kama-clic-counter' ) );
 
 		return $actions;
 	}
 
-	function admin_menu(){
+	public function admin_menu(){
 
 		// just in case
-		if( ! KCCounter()->admin_access ){
+		if( ! plugin()->manage_access ){
 			return;
 		}
 
@@ -57,17 +59,17 @@ class KCC_Admin {
 			'Kama Click Counter',
 			'Kama Click Counter',
 			'read',
-			KCC_NAME,
+			plugin()->slug,
 			[ $this, 'options_page_output' ]
 		);
 
-		add_action( "load-$hookname", [ $this, 'options_page_load' ] );
+		add_action( "load-$hookname", [ $this, 'admin_page_load' ] );
 	}
 
-	function options_page_load(){
+	public function admin_page_load(){
 
 		// just in case...
-		if( ! KCCounter()->admin_access ){
+		if( ! plugin()->manage_access ){
 			return;
 		}
 
@@ -77,12 +79,14 @@ class KCC_Admin {
 		if( isset( $_POST['save_options'] ) ){
 
 			if( ! wp_verify_nonce( $_nonce, 'save_options' ) && check_admin_referer( 'save_options' ) ){
-				return $this->msg = 'error: nonce failed';
+				$this->msg = 'error: nonce failed';
+
+				return;
 			}
 
 			$_POST = wp_unslash( $_POST );
 
-			// очистка
+			// sanitize
 			$opt = $this->opt->get_def_options();
 			foreach( $opt as $key => & $val ){
 				$val = $_POST[ $key ] ?? '';
@@ -111,7 +115,9 @@ class KCC_Admin {
 		elseif( isset( $_POST['reset'] ) ){
 
 			if( ! wp_verify_nonce( $_nonce, 'save_options' ) && check_admin_referer( 'save_options' ) ){
-				return $this->msg = 'error: nonce failed';
+				$this->msg = 'error: nonce failed';
+
+				return;
 			}
 
 			$this->opt->reset_to_defaults();
@@ -121,7 +127,9 @@ class KCC_Admin {
 		elseif( isset($_POST['update_link']) ){
 
 			if( ! wp_verify_nonce( $_nonce, 'update_link' ) && check_admin_referer( 'update_link' ) ){
-				return $this->msg = 'error: nonce failed';
+				$this->msg = 'error: nonce failed';
+
+				return;
 			}
 
 			$data = wp_unslash( $_POST['up'] );
@@ -143,14 +151,16 @@ class KCC_Admin {
 			unset( $val );
 
 			$this->msg = $this->update_link( $id, $data )
-				? __('Link updated!', 'kama-clic-counter')
-				: 'error: ' . __('Failed to update link!', 'kama-clic-counter');
+				? __( 'Link updated!', 'kama-clic-counter' )
+				: 'error: ' . __( 'Failed to update link!', 'kama-clic-counter' );
 		}
 		// bulk_action delete_links
 		elseif( isset( $_POST['delete_link_id'] ) ){
 
 			if( ! wp_verify_nonce( $_nonce, 'bulk_action' ) && check_admin_referer( 'bulk_action' ) ){
-				return $this->msg = 'error: nonce failed';
+				$this->msg = 'error: nonce failed';
+
+				return;
 			}
 
 			if( $this->delete_links( $_POST['delete_link_id'] ) ){
@@ -164,7 +174,9 @@ class KCC_Admin {
 		elseif( isset( $_GET['delete_link'] ) ){
 
 			if( ! wp_verify_nonce( $_nonce, 'delete_link' ) ){
-				return $this->msg = 'error: nonce failed';
+				$this->msg = 'error: nonce failed';
+
+				return;
 			}
 
 			if( $this->delete_links( $_GET['delete_link'] ) ){
@@ -176,19 +188,37 @@ class KCC_Admin {
 		}
 	}
 
-	public static function admin_page_url() {
-		return admin_url( 'admin.php?page=' . KCC_NAME );
+	public function admin_page_url( $args = [] ) {
+
+		$url = admin_url( 'admin.php?page=' . plugin()->slug );
+
+		if( 'settings' === $args ){
+			$url = add_query_arg( [ 'subpage' => 'settings' ], $url );
+		}
+
+		if( $args ){
+			$url = add_query_arg( $args, $url );
+		}
+
+		return $url;
 	}
 
 	public function options_page_output(){
-		include KCC_PATH . 'admin/options-page.php';
+		include plugin()->dir . '/admin/pages/admin.php';
 	}
 
-	function update_link( $id, $data ){
+	/**
+	 * @param int   $link_id
+	 * @param array $data
+	 *
+	 * @return int|false
+	 */
+	function update_link( $link_id, $data ) {
 		global $wpdb;
 
-		if( $id = (int) $id ){
-			$query = $wpdb->update( $wpdb->kcc_clicks, $data, [ 'link_id' => $id ] );
+		$link_id = (int) $link_id;
+		if( $link_id ){
+			$query = $wpdb->update( $wpdb->kcc_clicks, $data, [ 'link_id' => $link_id ] );
 		}
 
 		// обновление вложения, если оно есть
@@ -199,11 +229,11 @@ class KCC_Admin {
 			);
 		}
 
-		return $query;
+		return $query ?? false;
 	}
 
 	function delete_link_url( $link_id ){
-		return add_query_arg( [ 'delete_link' =>$link_id, '_wpnonce' =>wp_create_nonce('delete_link') ] );
+		return add_query_arg( [ 'delete_link' => $link_id, '_wpnonce' =>wp_create_nonce('delete_link') ] );
 	}
 
 	/**
@@ -248,43 +278,5 @@ class KCC_Admin {
 
 		return $wpdb->update( $wpdb->kcc_clicks, $new_data, [ 'attach_id' => $attach_id ] );
 	}
-
-	public function activation(){
-		global $wpdb;
-
-		KCC_Counter::set_wpdb_tables();
-
-		$charset_collate = ( ! empty( $wpdb->charset ) ) ? "DEFAULT CHARSET=$wpdb->charset" : '';
-		$charset_collate .= ( ! empty( $wpdb->collate ) ) ? " COLLATE $wpdb->collate" : '';
-
-		// Создаем таблицу если такой еще не существует
-		$sql = "CREATE TABLE $wpdb->kcc_clicks (
-			link_id           bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-			attach_id         bigint(20) UNSIGNED NOT NULL default 0,
-			in_post           bigint(20) UNSIGNED NOT NULL default 0,
-			link_clicks       bigint(20) UNSIGNED NOT NULL default 1,
-			link_name         varchar(191)        NOT NULL default '',
-			link_title        text                NOT NULL ,
-			link_description  text                NOT NULL ,
-			link_date         date                NOT NULL default '1970-01-01',
-			last_click_date   date                NOT NULL default '1970-01-01',
-			link_url          text                NOT NULL ,
-			file_size         varchar(100)        NOT NULL default '',
-			downloads         ENUM('','yes')      NOT NULL default '',
-			PRIMARY KEY  (link_id),
-			KEY in_post (in_post),
-			KEY downloads (downloads),
-			KEY link_url (link_url(191))
-		) $charset_collate";
-
-		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-
-		dbDelta( $sql );
-
-		if( ! get_option( Options::OPT_NAME ) ){
-			$this->opt->reset_to_defaults();
-		}
-	}
-
 
 }
