@@ -640,9 +640,9 @@ class KCC_Counter {
 			$icon_name = 'default.png';
 		}
 
-		$icon_name = file_exists( plugin()->dir . "/icons/$icon_name" ) ? $icon_name : 'default.png';
+		$icon_name = file_exists( plugin()->dir . "/assets/icons/$icon_name" ) ? $icon_name : 'default.png';
 
-		$icon_url = plugin()->url . "/icons/$icon_name";
+		$icon_url = plugin()->url . "/assets/icons/$icon_name";
 
 		return apply_filters( 'get_url_icon', $icon_url, $icon_name );
 	}
