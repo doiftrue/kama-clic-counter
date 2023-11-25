@@ -172,7 +172,7 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 				<?php if( $this->opt->in_post ){ ?>
 					<td><?= ($link->in_post && $in_post) ? '<a href="'. $in_post_permalink .'" title="'. esc_attr( $in_post->post_title ) .'">'. $link->in_post .'</a>' : '' ?></td>
 				<?php } ?>
-				<td><?= $link->attach_id ? sprintf( '<a href="%s">%s</a>', admin_url( 'media.php?action=edit&attachment_id=' . $link->attach_id ), $link->attach_id ) : '' ?></td>
+				<td><?= $link->attach_id ? sprintf( '<a href="%s">%s</a>', admin_url( "post.php?post={$link->attach_id}&action=edit" ), $link->attach_id ) : '' ?></td>
 				<td><?= $link->link_date ?></td>
 				<td><?= $link->last_click_date ?></td>
 				<td><?= $link->downloads ? __( 'yes', 'kama-clic-counter' ) : '' ?></td>
