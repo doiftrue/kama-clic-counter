@@ -16,12 +16,8 @@ class Content_Replacer {
 
 	/**
 	 * Change links that have special class in given content.
-	 *
-	 * @param string $content
-	 *
-	 * @return string
 	 */
-	public function modify_links( $content ) {
+	public function modify_links( string $content ): string {
 
 		$links_class = plugin()->opt->links_class;
 
@@ -37,12 +33,8 @@ class Content_Replacer {
 
 	/**
 	 * Parse string to detect and process pairs of tag="value".
-	 *
-	 * @param $match
-	 *
-	 * @return string
 	 */
-	public function _make_html_link_cb( $match ): string {
+	public function _make_html_link_cb( array $match ): string {
 		global $post;
 
 		$link_attrs  = $match[1];

@@ -74,6 +74,8 @@ RewriteRule \.(zip|7z|exe)$ - [NC,F,L]
 * PHP class autoloader added.
 * PHP namespaces added.
 * Filter `kcc_admin_access` renamed to `kcc_manage_access`.
+* Filter `parce_kcc_url` renamed to `click_counter__parse_kcc_url`.
+* Filter `get_url_icon` renamed to `click_counter__get_icon_url`.
 
 = 3.6.10 =
 * Minor improvemets.

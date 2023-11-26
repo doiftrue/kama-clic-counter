@@ -25,13 +25,13 @@ class Helpers {
 	/**
 	 * Gets a link to the icon image by the extension in the passed URL.
 	 *
-	 * @param $url
+	 * @param $link_url
 	 *
 	 * @return mixed|null
 	 */
-	public static function get_url_icon( $url ){
+	public static function get_icon_url( $link_url ){
 
-		$url_path = parse_url( $url, PHP_URL_PATH );
+		$url_path = parse_url( $link_url, PHP_URL_PATH );
 
 		if( preg_match( '~\.([a-zA-Z0-9]{1,8})(?=$|\?.*)~', $url_path, $m ) ){
 			$icon_name = $m[1] . '.png';
@@ -44,7 +44,7 @@ class Helpers {
 
 		$icon_url = plugin()->url . "/assets/icons/$icon_name";
 
-		return apply_filters( 'get_url_icon', $icon_url, $icon_name );
+		return apply_filters( 'click_counter__get_icon_url', $icon_url, $icon_name );
 	}
 
 }

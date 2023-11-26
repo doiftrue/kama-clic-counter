@@ -14,7 +14,6 @@ class Download_Shortcode {
 	public function download_shortcode( $atts = [] ): string {
 		global $post;
 
-		// белый список параметров и значения по умолчанию
 		$atts = shortcode_atts( [
 			'url'   => '',
 			'title' => '',
@@ -27,11 +26,12 @@ class Download_Shortcode {
 
 		$kcc_url = plugin()->counter->get_kcc_url( $atts['url'], $post->ID, 1 );
 
-		// записываем данные в БД
+		// write data to the database
+
 		$link = plugin()->counter->get_link( $kcc_url );
 
 		if( ! $link ){
-			plugin()->counter->do_count( $kcc_url, $count = false ); // для проверки, чтобы не считать эту операцию
+			plugin()->counter->do_count( $kcc_url, $count = false ); // don't count this operation
 			$link = plugin()->counter->get_link( $kcc_url );
 		}
 
@@ -45,17 +45,17 @@ class Download_Shortcode {
 	}
 
 	/**
-	 * Заменяет шоткоды в шаблоне на реальные данные
+	 * Replaces the shotcodes in the template with real data.
 	 *
-	 * @param string $tpl   Шаблон для замены в нем данных
-	 * @param object $link  данные ссылки из БД
+	 * @param string $tpl   A template to replace the data in it.
+	 * @param object $link  Reference data from the database.
 	 *
-	 * @return string HTML код блока - замененный шаблон
+	 * @return string The HTML code of the block is the replaced template.
 	 */
 	public function tpl_replace_shortcodes( string $tpl, $link ): string {
 
 		$tpl = strtr( $tpl, [
-			'[icon_url]'  => Helpers::get_url_icon( $link->link_url ),
+			'[icon_url]'  => Helpers::get_icon_url( $link->link_url ),
 			'[edit_link]' => $this->edit_link_url( $link->link_id ),
 		] );
 

@@ -24,10 +24,10 @@ class Widget extends \WP_Widget {
 	}
 
 	/**
-	 * Вывод виджета на Фронте
+	 * Widget output on Front.
 	 *
-	 * @param array $args  Аргументы виджета.
-	 * @param array $opts  Сохраненные данные из настроек
+	 * @param array $args  Widget Arguments.
+	 * @param array $opts  Saved data from widget settings.
 	 *
 	 * @return void
 	 */
@@ -81,10 +81,11 @@ class Widget extends \WP_Widget {
 		}
 
 		// out
+
 		$lis = [];
 		foreach( $results as $link ){
 
-			$tpl = $template; // временный шаблон
+			$tpl = $template; // temporary template
 
 			if( false !== strpos( $template, '[link_description' ) ){
 				$ln = 70;
@@ -108,7 +109,7 @@ class Widget extends \WP_Widget {
 
 			$tpl = str_replace( '[link_url]', esc_url( $_url ), $tpl );
 
-			// меняем остальное
+			// change the rest
 			$lis[] = '<li>' . plugin()->download_shortcode->tpl_replace_shortcodes( $tpl, $link ) . '</li>' . "\n";
 		}
 

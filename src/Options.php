@@ -21,7 +21,7 @@ class Options {
 	private $options;
 
 	private $default_options = [
-		// шаблон для блока загрузок
+		// download block template
 		'download_tpl' => '
 			<div class="kcc_block" title="Скачать" onclick="document.location.href=\'[link_url]\'">
 				<img class="alignleft" src="[icon_url]" alt="" />
@@ -47,20 +47,20 @@ class Options {
 				.kcc_block:after{ content:""; display:table; clear:both; }
 			</style>
 		',
-		// css класс для простых ссылок (если не указано, то этот функционал отключен).
+		// css class for links in content (if not specified, this functionality is disabled).
 		'links_class' => 'count',
 		// may be: '', 'in_title' or 'in_plain' (for simple links)
 		'add_hits'             => '',
 		'in_post'              => 1,
-		// прятать ссылку или нет?
+		// should we hide the link or not?
 		'hide_url'             => false,
-		// включить виджет для WordPress
+		// enable a widget for WordPress?
 		'widget'               => 1,
-		// выводить ссылку на статистику в Админ баре?
+		// Show a link to the stats in the admin bar?
 		'toolbar_item'         => 1,
-		// Название ролей, кроме администратора, которым доступно упраление плагином.
+		// The name of roles, other than administrator, to which control of the plugin is available.
 		'access_roles'         => [],
-		// подстроки. Если ссылка имеет указанную подстроку, то не считать клик на нее...
+		// Substrings. If the link has the specified substring, then don't count clicking on it.
 		'url_exclude_patterns' => '',
 	];
 

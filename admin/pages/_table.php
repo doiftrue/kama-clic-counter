@@ -154,7 +154,7 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 
 				<td>
 					<a href="<?= esc_url( $link->link_url ) ?>">
-						<img title="<?= __('Link', 'kama-clic-counter') ?>" class="icon" src="<?= Helpers::get_url_icon( $link->link_url ) ?>" />
+						<img title="<?= __('Link', 'kama-clic-counter') ?>" class="icon" src="<?= Helpers::get_icon_url( $link->link_url ) ?>" />
 					</a>
 				</td>
 

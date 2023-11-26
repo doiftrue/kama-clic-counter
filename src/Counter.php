@@ -29,7 +29,7 @@ class Counter {
 	}
 
 	/**
-	 * Скрипт для подсчета ссылок на всем сайте.
+	 * A script to count links all over the site.
 	 *
 	 * @return void
 	 */
@@ -54,11 +54,11 @@ class Counter {
 	}
 
 	/**
-	 * Получает ссылку по которой будут считаться клики.
+	 * Gets the link on which clicks will be counted.
 	 *
-	 * @param string     $url       string or placeholder `{url}`
-	 * @param int|string $in_post   1/0 of placeholder `{in_post}`.
-	 * @param int|string $download  1/0 of placeholder `{download}`.
+	 * @param string     $url       String or Placeholder `{url}`
+	 * @param int|string $in_post   1/0 or Placeholder `{in_post}`.
+	 * @param int|string $download  1/0 or Placeholder `{download}`.
 	 *
 	 * @return mixed|null
 	 */
@@ -92,30 +92,28 @@ class Counter {
 	}
 
 	/**
-	 * Прячет оригинальную ссылку под ID ссылки. Ссылка должна существовать в БД.
+	 * Hides the original link under the link ID. The link must exist in the database.
 	 *
-	 * @param string $kcc_url  URL плагина для подсчета ссылки.
+	 * @param string $kcc_url Plugin formated URL of the link counting.
 	 *
-	 * @return string URL со спрятанной ссылкой.
+	 * @return string URL with a hidden link.
 	 */
-	public function hide_link_url( $kcc_url ) {
+	public function hide_link_url( $kcc_url ): string {
 
-		$parsed = $this->parce_kcc_url( $kcc_url );
+		$parsed = $this->parse_kcc_url( $kcc_url );
 
 		// не прячем если это простая ссылка или урл уже спрятан
 		if( empty( $parsed['download'] ) || ( isset( $parsed[ self::COUNT_KEY ] ) && is_numeric( $parsed[ self::COUNT_KEY ] ) ) ){
 			return $kcc_url;
 		}
 
-		// не прячем если ссылки нет в БД
+		// do not hide if the link is not exist in the database
 		if( ! $link = $this->get_link( $kcc_url ) ){
 			return $kcc_url;
 		}
 
 		return preg_replace( '~' . self::COUNT_KEY . '=.*~', self::COUNT_KEY . "=$link->link_id", $kcc_url );
 	}
-
-	// COUNTING PART --------
 
 	/**
 	 * Adds clicks (count click) by given url.
@@ -127,7 +125,7 @@ class Counter {
 	 */
 	public function do_count( $kcc_url, $count = true ) {
 
-		$parsed = is_array( $kcc_url ) ? $kcc_url : $this->parce_kcc_url( $kcc_url );
+		$parsed = is_array( $kcc_url ) ? $kcc_url : $this->parse_kcc_url( $kcc_url );
 
 		$args = [
 			'link_url'  => $parsed[ self::COUNT_KEY ], // заметка: без http протокола
@@ -352,7 +350,7 @@ class Counter {
 			return;
 		}
 
-		$parsed = $this->parce_kcc_url( $_SERVER['REQUEST_URI'] );
+		$parsed = $this->parse_kcc_url( $_SERVER['REQUEST_URI'] );
 		$url = $parsed[ self::COUNT_KEY ];
 		if( ! $url ){
 			return;
@@ -389,12 +387,12 @@ class Counter {
 	}
 
 	/**
-	 * Разибирает KСС УРЛ.
+	 * Parses the KCC URL.
 	 *
 	 * Конвертирует относительный путь "/blog/dir/file" в абсолютный
 	 * (от корня сайта) и чистит УРЛ. Расчитан на прием грязных (неочищенных) URL.
 	 */
-	public function parce_kcc_url( string $kcc_url ): array {
+	public function parse_kcc_url( string $kcc_url ): array {
 
 		preg_match( '/\?(.+)$/', $kcc_url, $m ); // get kcc url query args
 		$kcc_query = $m[1]; // parse_url( $kcc_url, PHP_URL_QUERY );
@@ -440,7 +438,7 @@ class Counter {
 			'download'      => (bool) ( $query_args['download'] ?? false ),
 		];
 
-		return apply_filters( 'parce_kcc_url', $return );
+		return apply_filters( 'click_counter__parse_kcc_url', $return );
 	}
 
 	public static function del_http_protocol( $url ){
@@ -496,7 +494,7 @@ class Counter {
 	}
 
 	/**
-	 * Получает размер файла по сылке.
+	 * Gets the file size from the link.
 	 *
 	 * @return string Eg: `136.6 KB` or empty string if no size determined.
 	 */
@@ -577,8 +575,8 @@ class Counter {
 		}
 
 		// http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
-		// 200 - это нужный статус код
-		// не забываем что ответ может содержать 301 редирект, потому ищем именно часть ответа со статусом 200
+		// 200 - this is the right status code.
+		// Don't forget that a reply may contain 301 redirects, so we are looking for the part of the reply with status 200.
 		if( preg_match( "/HTTP\/1\.[01] (200).*Content-Length: (\d+)/s", $data, $match ) ){
 			return (int) $match[2]; // Content-Length
 		}
@@ -587,13 +585,13 @@ class Counter {
 	}
 
 	/**
-	 * Получает данные уже существующие ссылки из БД.
-	 * Кэширует в static переменную, если не удалось получить ссылку кэш не устанавливается.
+	 * Gets data of already existing link from the database.
+	 * Caches to a static variable, if it fails to get the link the cache is not set.
 	 *
-	 * @param  string/int  $kcc_url      URL или ID ссылки, или kcc_URL
-	 * @param  boolean     $clear_cache  Когда нужно очистить кэш ссылки.
+	 * @param string|int $kcc_url      URL or link ID, or kcc_URL.
+	 * @param bool       $clear_cache  When you need to clear the link cache.
 	 *
-	 * @return object/null               null при очистке кэша или если не удалось получить данные.
+	 * @return object|void             NULL when the cache is cleared or if the data could not be retrieved.
 	 */
 	public function get_link( $kcc_url, $clear_cache = false ) {
 		global $wpdb;
@@ -610,7 +608,7 @@ class Counter {
 			return $cache[ $kcc_url ];
 		}
 
-		// тут кэш юзать можно только со сбросом в нужном месте...
+		// you can only use the cache with a reset in the right place.
 
 		// if it is a direct link and not 'kcc_url'
 		if( is_numeric( $kcc_url ) || false === strpos( $kcc_url, self::COUNT_KEY ) ){
@@ -618,7 +616,7 @@ class Counter {
 		}
 		// it is 'kcc_url'
 		else{
-			$parsed = $this->parce_kcc_url( $kcc_url );
+			$parsed = $this->parse_kcc_url( $kcc_url );
 
 			$link_url = $parsed[ self::COUNT_KEY ];
 			$pid = $parsed[ self::PID_KEY ];
@@ -629,7 +627,7 @@ class Counter {
 			$WHERE = $wpdb->prepare( 'link_id = %d', $link_url );
 		}
 		else{
-			$in_post = @ $pid ? $wpdb->prepare( ' AND in_post = %d', $pid ) : '';
+			$in_post = ! empty( $pid ) ? $wpdb->prepare( ' AND in_post = %d', $pid ) : '';
 			$WHERE = $wpdb->prepare( 'link_url = %s ', self::del_http_protocol( $link_url ) ) . $in_post;
 		}
 
@@ -643,7 +641,7 @@ class Counter {
 	}
 
 	public function clear_link_cache( $kcc_url ) {
-		$this->get_link( $kcc_url, 'clear_cache' );
+		$this->get_link( $kcc_url, $clear_cache = true );
 	}
 
 	private static function replace_url_placeholders( $url ) {

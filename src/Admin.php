@@ -37,7 +37,10 @@ class Admin {
 		$upgrader->init();
 	}
 
-	# Ссылки на страницы статистики и настроек со страницы плагинов
+	/**
+	 * Adds links to the statistics and settings pages from the plugins page.
+	 * For WP hook.
+	 */
 	public function plugins_page_links( $actions ){
 
 		$actions[] = sprintf( '<a href="%s">%s</a>', $this->admin_page_url( 'settings' ), __( 'Settings', 'kama-clic-counter' ) );
@@ -53,7 +56,7 @@ class Admin {
 			return;
 		}
 
-		// открываем для всех, сюда не должно доходить, если нет доступа!....
+		// open to everyone, it shouldn't come here if you can't access!
 		$hookname = add_options_page(
 			'Kama Click Counter',
 			'Kama Click Counter',
@@ -203,6 +206,9 @@ class Admin {
 		return $url;
 	}
 
+	/**
+	 * Callback for {@see add_options_page()} function parameter.
+	 */
 	public function options_page_output(){
 		include plugin()->dir . '/admin/pages/admin.php';
 	}
@@ -221,11 +227,14 @@ class Admin {
 			$query = $wpdb->update( $wpdb->kcc_clicks, $data, [ 'link_id' => $link_id ] );
 		}
 
-		// обновление вложения, если оно есть
+		$link_title = sanitize_text_field( $data['link_title'] );
+		$link_description = sanitize_textarea_field( $data['link_description'] );
+
+		// update the attachment, if any
 		if( $data['attach_id'] > 0 ){
 			$wpdb->update( $wpdb->posts,
-				[ 'post_title' => $data['link_title'], 'post_content' => $data['link_description'] ],
-				[ 'ID' => $data['attach_id'] ]
+				[ 'post_title' => $link_title, 'post_content' => $link_description ],
+				[ 'ID' => (int) $data['attach_id'] ]
 			);
 		}
 
@@ -237,11 +246,9 @@ class Admin {
 	}
 
 	/**
-	 * Удаление ссылок из БД по переданному массиву ID или ID ссылки.
+	 * Deleting links from the database by passed array ID or link ID.
 	 *
-	 * @param  array|int $array_ids ID ссылок котоыре нужно удалить.
-	 *
-	 * @return bool  Удалено ли?
+	 * @param  array|int $array_ids IDs of links to be deleted.
 	 */
 	private function delete_links( $array_ids = [] ): bool {
 		global $wpdb;
@@ -255,9 +262,6 @@ class Admin {
 		return $wpdb->query( "DELETE FROM $wpdb->kcc_clicks WHERE link_id IN (" . implode( ',', $array_ids ) . ")" );
 	}
 
-	/**
-	 * Удаление ссылки по ID вложения.
-	 */
 	public function delete_link_by_attach_id( $attach_id ){
 		global $wpdb;
 
@@ -269,7 +273,7 @@ class Admin {
 	}
 
 	/**
-	 * Обновление ссылки, если обновляется вложение.
+	 * Update the link if the attachment is updated.
 	 */
 	public function update_link_with_attach( $attach_id ){
 		global $wpdb;
