@@ -29,7 +29,6 @@ add_action( 'plugins_loaded', [ plugin(), 'init' ] );
 
 function plugin(): Plugin {
 	static $instance;
-
 	$instance || $instance = new Plugin( __FILE__ );
 
 	return $instance;

@@ -1,12 +1,13 @@
+
 === Plugin Name ===
 Stable tag: trunk
-Tested up to: 6.4.1
+Tested up to: 6.4.3
 Contributors: Tkama
-Tags: analytics, statistics, count, count clicks, clicks, counter, download, downloads, link, kama
+Tags: analytics, statistics, count clicks, counter
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Count clicks on any link all over the site. Creates beautiful file download block in post content. Has top downloads widget.
+Count clicks on any link all over the site. Creates beautiful file download block in post content. Has top downloads' widget.
 
 
 == Description ==
@@ -38,30 +39,6 @@ Just customize CSS styles in plugin options page. Also you can add css styles in
 2. Plugin settings page.
 3. Single link edit page.
 4. TinyMce visual editor downloads button.
-
-
-
-
-==== TODO ====
-
-* set filename in shortcode itself. Можно ли как то сделать чтобы в шорткод вставлялась и ссылка с именем файла, чтобы не на отдельной странице имя файла править
-
-* detail statistic on each day (PRO version)
-
-* tiny mce button click show url field and button to select file from media library
-
-* Когда пользователь нажимает на кнопку DW, появляющаяся адресная строка вводит любого пользователя в ступор, в итоге все пользуются стандартной кнопкой, а плагин неиспользуется вообще.. Диалог редактирования ссылки из настроек прикрутить бы к кнопке DW в редакторе.. И в самом диалоге прикрутить стандартный диалог прикрепления файла (в нем же можно и с локального компьютера и из медиатеки цеплять - пользователи же уже привыкли).. Страница статистики расположенная в Настройках - нелогичное решение, несмотря на то, что там и настройки тоже есть. Ее место либо вообще в главном меню (чего я сам не люблю), либо в Инструменты или Медиафайлы. И сама аббревиатура DW на кнопке неинтуитивная, иконку бы, могу поискать..
-
-hotlink protection
-<IfModule mod_rewrite.c>
-RewriteEngine on
-RewriteBase /
-RewriteCond %{HTTP_REFERER} !^$
-RewriteCond %{HTTP_REFERER} !^https?://.*wptest\.ru/ [NC]
-RewriteRule \.(zip|7z|exe)$ - [NC,F,L]
-</IfModule>
-
-
 
 
 
