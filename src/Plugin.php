@@ -41,7 +41,6 @@ class Plugin {
 	public $download_shortcode;
 
 	public function __construct( string $main_file_path ) {
-
 		$this->set_wpdb_tables();
 
 		$this->basename = plugin_basename( $main_file_path );
@@ -148,9 +147,7 @@ class Plugin {
 	}
 
 	public function check_dependencies(): bool {
-
 		if( version_compare( PHP_VERSION, $this->info['php_ver'], '<=' ) ){
-
 			Helpers::notice_message(
 				'<b>Kama Click Counter</b> plugin requires PHP version <b>' . $this->info['php_ver'] . '</b> or higher. Please upgrade PHP or diactivate the plugin.',
 				'error'

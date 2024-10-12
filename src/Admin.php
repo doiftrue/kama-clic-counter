@@ -96,9 +96,10 @@ class Admin {
 				is_string( $val ) && $val = trim( $val );
 
 				if( $key === 'download_tpl' ){
+					// no sanitize...
 				}
-				// no sanitize... wp_kses($val, 'post');
 				elseif( $key === 'url_exclude_patterns' ){
+					// no sanitize... wp_kses($val, 'post');
 				}
 				// no sanitize...
 				elseif( is_array( $val ) ){
@@ -218,15 +219,11 @@ class Admin {
 	}
 
 	/**
-	 * @param int   $link_id
-	 * @param array $data
-	 *
 	 * @return int|false
 	 */
-	private function update_link( $link_id, $data ) {
+	private function update_link( int $link_id, array $data ) {
 		global $wpdb;
 
-		$link_id = (int) $link_id;
 		if( $link_id ){
 			$query = $wpdb->update( $wpdb->kcc_clicks, $data, [ 'link_id' => $link_id ] );
 		}

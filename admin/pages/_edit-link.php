@@ -1,16 +1,16 @@
 <?php
-
 namespace KamaClickCounter;
 
 defined( 'ABSPATH' ) || exit;
 
 /**
  * @var Admin $this
+ * @var int $edit_link_id
  */
 
 global $wpdb;
 
-$link = $wpdb->get_row( "SELECT * FROM $wpdb->kcc_clicks WHERE link_id = " . (int) $edit_link_id );
+$link = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->kcc_clicks WHERE link_id = %d", $edit_link_id ) );
 
 if( ! $link ){
 	echo '<br><br>';
@@ -45,7 +45,7 @@ if( ! $link ){
 
 	<input type="hidden" name="local_referer" value="<?= esc_attr($referer) ?>" />
 
-	<img style="position:absolute; top:-10px; right:350px; width:70px; width:50px;" src="<?= $icon_link ?>" />
+	<img style="position:absolute; top:-10px; right:350px; width:70px; height:50px;" src="<?= $icon_link ?>"  alt=""/>
 	<p>
 		<input type="number" style="width:100px;" name="up[link_clicks]" value='<?= esc_attr( $link->link_clicks ) ?>' /> <?php printf( __('Clicks. Per day: %s', 'kama-clic-counter'), ($var=get_clicks_per_day($link)) ? $var : 0 ) ?></p>
 	<p>
@@ -61,7 +61,11 @@ if( ! $link ){
 		<textarea type="text" style='width:600px;height:70px;' name='up[link_description]' ><?= stripslashes($link->link_description) ?></textarea> <?php _e('File description', 'kama-clic-counter') ?>
 	</p>
 	<p>
-		<input type="text" style="width:600px;" name="up[link_url]" value="<?= esc_attr( $link->link_url ) ?>" readonly="readonly" /> <a href="#" style="margin-top:.5em; font-size:110%;" class="dashicons dashicons-edit" onclick="var $the = jQuery(this); $the.parent().find('input').removeAttr('readonly').focus(); $the.remove();"></a> <?php _e('Link to file', 'kama-clic-counter') ?>
+		<input type="text" style="width:600px;" name="up[link_url]" value="<?= esc_attr( $link->link_url ) ?>" readonly="readonly" />
+		<a href="#" style="margin-top:.5em; font-size:110%;" class="dashicons dashicons-edit"
+		   onclick="const $the = jQuery(this) $the.parent().find('input').removeAttr('readonly').focus(); $the.remove();"
+		></a>
+		<?php _e('Link to file', 'kama-clic-counter') ?>
 	</p>
 	<p>
 		<input type="text" style="width:100px;" name="up[link_date]" value="<?= esc_attr( $link->link_date ) ?>" readonly="readonly" /> <a href="#" style="margin-top:.5em; font-size:110%;" class="dashicons dashicons-edit" onclick="var $the = jQuery(this); $the.parent().find('input').removeAttr('readonly').focus(); $the.remove();"></a> <?php _e('Date added', 'kama-clic-counter') ?>
