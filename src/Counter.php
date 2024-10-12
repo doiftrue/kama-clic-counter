@@ -37,16 +37,16 @@ class Counter {
 		$js = strtr(
 			file_get_contents( plugin()->dir . '/assets/counter.js' ),
 			[
-				'{kcckey}'      => self::COUNT_KEY,
-				'{pidkey}'      => self::PID_KEY,
-				'{urlpatt}'     => $this->get_kcc_url( '{url}', '{in_post}', '{download}' ),
-				'{aclass}'      => sanitize_html_class( $this->opt->links_class ),
-				'{questSymbol}' => self::URL_PLACEHOLDERS['?'],
-				'{ampSymbol}'   => self::URL_PLACEHOLDERS['&'],
+				'__kcckey__'      => self::COUNT_KEY,
+				'__pidkey__'      => self::PID_KEY,
+				'__urlpatt__'     => $this->get_kcc_url( '{url}', '{in_post}', '{download}' ),
+				'__aclass__'      => sanitize_html_class( $this->opt->links_class ),
+				'__questSymbol__' => self::URL_PLACEHOLDERS['?'],
+				'__ampSymbol__'   => self::URL_PLACEHOLDERS['&'],
 			]
 		);
 
-		$js = preg_replace( '~[^:]//[^\n]+|[\t\n\r]~', '', $js ); // remove comments, \t\r\n
+		$js = preg_replace( '~[^:]//[^\n]+|[\t\n\r]~', ' ', $js ); // remove comments, \t\r\n
 		$js = preg_replace( '~[ ]{2,}~', ' ', $js );
 		?>
 		<script id="kama-click-counter"><?= $js ?></script>

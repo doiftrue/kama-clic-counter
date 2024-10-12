@@ -1,12 +1,12 @@
 (function(){
 
 	const params = {
-		kcckey      : '{kcckey}',
-		pidkey      : '{pidkey}',
-		urlpatt     : '{urlpatt}',
-		aclass      : '{aclass}',
-		questSymbol : '{questSymbol}',
-		ampSymbol   : '{ampSymbol}'
+		kcckey      : '__kcckey__',
+		pidkey      : '__pidkey__',
+		urlpatt     : '__urlpatt__',
+		aclass      : '__aclass__',
+		questSymbol : '__questSymbol__',
+		ampSymbol   : '__ampSymbol__'
 	};
 
 	document.addEventListener( 'click', clickEventHandler );
@@ -22,13 +22,16 @@
 			return;
 		}
 
-		let realurl  = a.href.match( new RegExp( params.kcckey +'=(.*)' ) )[1];
+		let match = a.href.match( new RegExp( params.kcckey +'=(.*)' ) );
+		if( match && match[1] ){
+			let realurl = match[1];
 
-		if( realurl ){
-			if( parseInt( realurl ) )
-				realurl = '/#download'+ realurl;
+			if( parseInt( realurl ) ){
+				realurl = '/#download' + realurl;
+			}
 
-			a.dataset.kccurl = a.href.replace( realurl, replaceUrlExtraSymbols(realurl) ); // before a.href !
+			// !!! before a.href
+			a.dataset.kccurl = a.href.replace( realurl, replaceUrlExtraSymbols( realurl ) );
 			a.href = realurl;
 		}
 	}
@@ -40,13 +43,12 @@
 	}
 
 	function clickEventHandler( ev ){
-		let a = ev.target;
+		let a = ev.target.closest( `.${params.aclass}` );
 
-		if( 'A' !== ev.target.tagName ){
+		if( !a || 'A' !== a.tagName ){
 			return;
 		}
 
-		// already set before - `a[data-kccurl]`
 		if( a.dataset.kccurl ){
 			a.href = a.dataset.kccurl;
 			return;
@@ -54,13 +56,13 @@
 
 		let href = a.href;
 
-		// modified link
+		// modefied link
 		if( href.indexOf( params.kcckey ) !== -1 ){
-			let url = href.match( new RegExp( params.kcckey +'=(.*)' ) )[1];
-
-			if( url ){
-				if( !! parseInt(url) ){
-					url = '/#download'+ url;
+			let match = href.match( new RegExp( params.kcckey +'=(.*)' ) );
+			if ( match && match[1] ) {
+				let url = match[1];
+				if( !! parseInt( url ) ){
+					url = '/#download' + url;
 				}
 
 				a.href = url;
@@ -71,10 +73,9 @@
 		else if( a.classList.contains( params.aclass ) ){
 			let pid  = a.dataset[ params.pidkey ] || '';
 
-			let kccurl;
-			kccurl = params.urlpatt.replace( '{in_post}', pid );
-			kccurl = kccurl.replace( '{download}', ( a.dataset.kccdownload ? 1 : '' ) );
-			kccurl = kccurl.replace( '{url}', replaceUrlExtraSymbols( href ) );
+			let kccurl = params.urlpatt.replace( '{in_post}', pid )
+				.replace( '{download}', ( a.dataset.kccdownload ? 1 : '' ) )
+				.replace( '{url}', replaceUrlExtraSymbols( href ) );
 
 			a.dataset.kccurl = kccurl;
 		}
