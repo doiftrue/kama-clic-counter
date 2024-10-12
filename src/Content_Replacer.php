@@ -4,10 +4,10 @@ namespace KamaClickCounter;
 
 class Content_Replacer {
 
-	public function __construct(){
+	public function __construct() {
 	}
 
-	public function init(){
+	public function init() {
 
 		if( plugin()->opt->links_class ){
 			add_filter( 'the_content', [ $this, 'modify_links' ] );
@@ -44,13 +44,13 @@ class Content_Replacer {
 
 		foreach( $args[0] as $pair ){
 			list( $tag, $value ) = explode( '=', $pair, 2 );
-			$value = trim( trim($value, '"\'') );
-			$args[ trim($tag) ] = $value;
+			$value = trim( trim( $value, '"\'' ) );
+			$args[ trim( $tag ) ] = $value;
 		}
 		unset( $args[0], $args[1] );
 
 		$after = '';
-		$args[ 'data-'. Counter::PID_KEY ] = $post->ID;
+		$args[ 'data-' . Counter::PID_KEY ] = $post->ID;
 		if( plugin()->opt->add_hits ){
 			$link = plugin()->counter->get_link( $args['href'] );
 

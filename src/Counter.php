@@ -16,7 +16,7 @@ class Counter {
 	/** @var Options */
 	public $opt;
 
-	public function __construct( Options $options ){
+	public function __construct( Options $options ) {
 
 		$this->opt = $options;
 	}
@@ -94,7 +94,7 @@ class Counter {
 	/**
 	 * Hides the original link under the link ID. The link must exist in the database.
 	 *
-	 * @param string $kcc_url Plugin formated URL of the link counting.
+	 * @param string $kcc_url  Plugin formated URL of the link counting.
 	 *
 	 * @return string URL with a hidden link.
 	 */
@@ -367,6 +367,7 @@ class Counter {
 			}
 			else{
 				trigger_error( sprintf( 'Error: kcc link with id %s not found.', $url ) );
+
 				return;
 			}
 		}
@@ -398,9 +399,9 @@ class Counter {
 		$kcc_query = $m[1]; // parse_url( $kcc_url, PHP_URL_QUERY );
 
 		// cut URL from $query, because - there could be query args (&) that is why cut it
-		$split = preg_split( '/[&?]?'. self::COUNT_KEY .'=/', $kcc_query );
+		$split = preg_split( '/[&?]?' . self::COUNT_KEY . '=/', $kcc_query );
 		$query = $split[0];
-		$url   = self::replace_url_placeholders( $split[1] ); // can be base64 encoded
+		$url = self::replace_url_placeholders( $split[1] ); // can be base64 encoded
 
 		if( ! $url ){
 			return [];
@@ -426,13 +427,13 @@ class Counter {
 		if(
 			! is_numeric( $url )
 			&& $url[0] !== '/'
-			&& ! preg_match( '~^(?:' . implode( '|', wp_allowed_protocols() ) . '):~', $url )
-		) {
+			&& ! preg_match( '~^(' . implode( '|', wp_allowed_protocols() ) . '):~', $url )
+		){
 			return [];
 		}
 
 		$return = [
-			self::COUNT_KEY => $url, // no esc_url()
+			self::COUNT_KEY => $url, // !!! no esc_url()
 			self::PID_KEY   => (int) ( $query_args[ self::PID_KEY ] ?? 0 ),
 			// array_key_exists( 'download', $query_args ), // isset null не берет
 			'download'      => (bool) ( $query_args['download'] ?? false ),
@@ -441,11 +442,11 @@ class Counter {
 		return apply_filters( 'click_counter__parse_kcc_url', $return );
 	}
 
-	public static function del_http_protocol( $url ){
+	public static function del_http_protocol( $url ) {
 		return preg_replace( '/https?:/', '', $url );
 	}
 
-	private function is_file( $url ){
+	private function is_file( $url ) {
 		/**
 		 * Allows to repalce {@see Counter::is_file()} method.
 		 *
@@ -536,8 +537,8 @@ class Counter {
 
 		$i = 0;
 		$type = [ "B", "KB", "MB", "GB" ];
-		while( ( $size/1024 ) > 1 ){
-			$size = $size/1024;
+		while( ( $size / 1024 ) > 1 ){
+			$size = $size / 1024;
 			$i++;
 		}
 
@@ -547,7 +548,7 @@ class Counter {
 	/**
 	 * Returns the size of a file without downloading it.
 	 *
-	 * @param string $url The location of the remote file to download. Cannot be null or empty.
+	 * @param string $url  The location of the remote file to download. Cannot be null or empty.
 	 *
 	 * @return int The size of the file referenced by $url, or 0 if the size could not be determined.
 	 */

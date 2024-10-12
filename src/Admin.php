@@ -32,7 +32,7 @@ class Admin {
 		add_filter( 'current_screen', [ $this, 'upgrade' ] );
 	}
 
-	public function upgrade(){
+	public function upgrade() {
 		$upgrader = new Upgrader();
 		$upgrader->init();
 	}
@@ -41,7 +41,7 @@ class Admin {
 	 * Adds links to the statistics and settings pages from the plugins page.
 	 * For WP hook.
 	 */
-	public function plugins_page_links( $actions ){
+	public function plugins_page_links( $actions ) {
 
 		$actions[] = sprintf( '<a href="%s">%s</a>', $this->admin_page_url( 'settings' ), __( 'Settings', 'kama-clic-counter' ) );
 		$actions[] = sprintf( '<a href="%s">%s</a>', $this->admin_page_url(), __( 'Statistics', 'kama-clic-counter' ) );
@@ -49,7 +49,7 @@ class Admin {
 		return $actions;
 	}
 
-	public function admin_menu(){
+	public function admin_menu() {
 
 		// just in case
 		if( ! plugin()->manage_access ){
@@ -68,7 +68,7 @@ class Admin {
 		add_action( "load-$hookname", [ $this, 'admin_page_load' ] );
 	}
 
-	public function admin_page_load(){
+	public function admin_page_load() {
 
 		// just in case...
 		if( ! plugin()->manage_access ){
@@ -95,8 +95,12 @@ class Admin {
 
 				is_string( $val ) && $val = trim( $val );
 
-				if( $key === 'download_tpl' ){} // no sanitize... wp_kses($val, 'post');
-				elseif( $key === 'url_exclude_patterns' ){} // no sanitize...
+				if( $key === 'download_tpl' ){
+				}
+				// no sanitize... wp_kses($val, 'post');
+				elseif( $key === 'url_exclude_patterns' ){
+				}
+				// no sanitize...
 				elseif( is_array( $val ) ){
 					$val = array_map( 'sanitize_key', $val );
 				}
@@ -135,7 +139,7 @@ class Admin {
 			}
 
 			$data = wp_unslash( $_POST['up'] );
-			$id   = (int) $data['link_id'];
+			$id = (int) $data['link_id'];
 
 			// очистка
 			foreach( $data as $key => & $val ){
@@ -209,7 +213,7 @@ class Admin {
 	/**
 	 * Callback for {@see add_options_page()} function parameter.
 	 */
-	public function options_page_output(){
+	public function options_page_output() {
 		include plugin()->dir . '/admin/pages/admin.php';
 	}
 
@@ -242,13 +246,13 @@ class Admin {
 	}
 
 	public function delete_link_url( $link_id ): string {
-		return add_query_arg( [ 'delete_link' => $link_id, '_wpnonce' =>wp_create_nonce('delete_link') ] );
+		return add_query_arg( [ 'delete_link' => $link_id, '_wpnonce' => wp_create_nonce( 'delete_link' ) ] );
 	}
 
 	/**
 	 * Deleting links from the database by passed array ID or link ID.
 	 *
-	 * @param  array|int $array_ids IDs of links to be deleted.
+	 * @param array|int $array_ids  IDs of links to be deleted.
 	 */
 	private function delete_links( $array_ids = [] ): bool {
 		global $wpdb;
@@ -262,7 +266,7 @@ class Admin {
 		return $wpdb->query( "DELETE FROM $wpdb->kcc_clicks WHERE link_id IN (" . implode( ',', $array_ids ) . ")" );
 	}
 
-	public function delete_link_by_attach_id( $attach_id ){
+	public function delete_link_by_attach_id( $attach_id ) {
 		global $wpdb;
 
 		if( ! $attach_id ){
@@ -275,7 +279,7 @@ class Admin {
 	/**
 	 * Update the link if the attachment is updated.
 	 */
-	public function update_link_with_attach( $attach_id ){
+	public function update_link_with_attach( $attach_id ) {
 		global $wpdb;
 
 		$attdata = get_post( $attach_id );

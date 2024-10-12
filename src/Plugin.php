@@ -68,7 +68,7 @@ class Plugin {
 	 */
 	public function init() {
 
-		if ( ! $this->check_dependencies() ) {
+		if( ! $this->check_dependencies() ){
 			return;
 		}
 
@@ -138,7 +138,7 @@ class Plugin {
 		}
 	}
 
-	public function add_toolbar_menu( $toolbar ){
+	public function add_toolbar_menu( $toolbar ) {
 
 		$toolbar->add_menu( [
 			'id'    => 'kcc',
@@ -149,7 +149,7 @@ class Plugin {
 
 	public function check_dependencies(): bool {
 
-		if ( version_compare( PHP_VERSION, $this->info['php_ver'], '<=' ) ) {
+		if( version_compare( PHP_VERSION, $this->info['php_ver'], '<=' ) ){
 
 			Helpers::notice_message(
 				'<b>Kama Click Counter</b> plugin requires PHP version <b>' . $this->info['php_ver'] . '</b> or higher. Please upgrade PHP or diactivate the plugin.',
@@ -162,10 +162,10 @@ class Plugin {
 		return true;
 	}
 
-	public function activation(){
+	public function activation() {
 		global $wpdb;
 
-		if ( ! $this->check_dependencies() ) {
+		if( ! $this->check_dependencies() ){
 			return;
 		}
 

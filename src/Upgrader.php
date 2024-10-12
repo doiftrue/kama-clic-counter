@@ -21,11 +21,11 @@ class Upgrader {
 	/** @var object[] */
 	private $db_fields;
 
-	public function __construct(){
-	    $this->is_force_upgrade = isset( $_GET['kcc_force_upgrade'] );
+	public function __construct() {
+		$this->is_force_upgrade = isset( $_GET['kcc_force_upgrade'] );
 
-	    $this->prev_ver = $this->is_force_upgrade ? '1.0' : get_option( self::OPTION_NAME, '1.0' );
-	    $this->curr_ver = plugin()->info['version'];
+		$this->prev_ver = $this->is_force_upgrade ? '1.0' : get_option( self::OPTION_NAME, '1.0' );
+		$this->curr_ver = plugin()->info['version'];
 	}
 
 	public function init() {
@@ -49,7 +49,6 @@ class Upgrader {
 			wp_redirect( remove_query_arg( 'kcc_force_upgrade' ) );
 			exit;
 		}
-
 	}
 
 	private function set_db_fields() {

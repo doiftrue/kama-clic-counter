@@ -4,10 +4,10 @@ namespace KamaClickCounter;
 
 class Download_Shortcode {
 
-	public function __construct(){
+	public function __construct() {
 	}
 
-	public function init(){
+	public function init() {
 		add_shortcode( 'download', [ $this, 'download_shortcode' ] );
 	}
 

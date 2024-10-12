@@ -5,14 +5,14 @@ namespace KamaClickCounter;
 class Helpers {
 
 	/**
-	 * @param string $message Message HTML.
-	 * @param string $type    Allowed: success | error | warning | info.
+	 * @param string $message  Message HTML.
+	 * @param string $type     Allowed: success | error | warning | info.
 	 */
 	public static function notice_message( string $message, string $type = 'warning' ) {
 
 		add_action(
 			'admin_notices',
-			function () use ( $message, $type ) {
+			function() use ( $message, $type ) {
 				?>
 				<div id="message" class="notice <?= esc_attr( "notice-$type" ) ?>">
 					<p><?= wp_kses_post( $message ) ?></p>
@@ -29,7 +29,7 @@ class Helpers {
 	 *
 	 * @return mixed|null
 	 */
-	public static function get_icon_url( $link_url ){
+	public static function get_icon_url( $link_url ) {
 
 		$url_path = parse_url( $link_url, PHP_URL_PATH );
 

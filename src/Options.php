@@ -48,7 +48,7 @@ class Options {
 			</style>
 		',
 		// css class for links in content (if not specified, this functionality is disabled).
-		'links_class' => 'count',
+		'links_class'          => 'count',
 		// may be: '', 'in_title' or 'in_plain' (for simple links)
 		'add_hits'             => '',
 		'in_post'              => 1,

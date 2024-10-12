@@ -12,13 +12,13 @@ class Widget extends \WP_Widget {
 		);
 	}
 
-	public static function init(){
+	public static function init() {
 
 		if( ! plugin()->opt->widget ){
 			return;
 		}
 
-		add_action( 'widgets_init', function () {
+		add_action( 'widgets_init', function() {
 			register_widget( self::class );
 		} );
 	}
@@ -124,26 +124,27 @@ class Widget extends \WP_Widget {
 	/**
 	 * Admin part of the widget
 	 */
-	public function form( $instance ){
+	public function form( $instance ) {
 
-		$title        = @ $instance['title']     ? $instance[ 'title' ]     : __('Top Downloads', 'kama-clic-counter' );
-		$number       = @ $instance['number']    ? $instance[ 'number' ]    : 5;
-		$last_date    = @ $instance['last_date'] ? $instance[ 'last_date' ] : '';
-		$template_css = @ $instance['template_css']
-			? $instance[ 'template_css' ]
-			: preg_replace(
-				'~^\t+~m', '', '.kcc_widget{ padding:15px; }
-				.kcc_widget li{ margin-bottom:10px; list-style: none; }
-				.kcc_widget li:after{ content:""; display:table; clear:both; }
-				.kcc_widget img{ width:30px; float:left; margin:5px 10px 5px 0; }
-				.kcc_widget p{ margin-left:40px; }'
-			);
+		$default_template_css = '
+			.kcc_widget{ padding:15px; }
+			.kcc_widget li{ margin-bottom:10px; list-style: none; }
+			.kcc_widget li:after{ content:""; display:table; clear:both; }
+			.kcc_widget img{ width:30px; float:left; margin:5px 10px 5px 0; }
+			.kcc_widget p{ margin-left:40px; }
+		';
 
-		$template = @ $instance['template']
-			? $instance['template']
-			: '<img src="[icon_url]" alt="" />' . "\n"
-               . '<a href="[link_url]">[link_title]</a> ([link_clicks])' . "\n"
-               . '<p>[link_description]</p>';
+		$default_template = '
+			<img src="[icon_url]" alt="" />
+			<a href="[link_url]">[link_title]</a> ([link_clicks])
+			<p>[link_description]</p>
+		';
+
+		$title        = $instance['title'] ?? __( 'Top Downloads', 'kama-clic-counter' );
+		$number       = $instance['number'] ?? 5;
+		$last_date    = $instance['last_date'] ?? '';
+		$template_css = $instance['template_css'] ?? preg_replace( '~^\t+~m', '', trim( $default_template_css ) );
+		$template     = $instance['template'] ?? preg_replace( '~^\t+~m', '', trim( $default_template ) );
 		?>
 		<p>
 			<label><?php _e( 'Title:', 'kama-clic-counter' ); ?>

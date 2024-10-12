@@ -20,7 +20,7 @@ class TinyMCE {
 	}
 
 	public static function register_buttons( $buttons ) {
-		$last      = array_pop( $buttons );
+		$last = array_pop( $buttons );
 		$buttons[] = 'kcc';
 		$buttons[] = $last;
 
