@@ -11,9 +11,9 @@
  * Plugin URI: https://wp-kama.com/77
  *
  * Requires PHP: 7.0
- * Requires at least: 4.2
+ * Requires at least: 5.7
  *
- * Version: 4.0.0
+ * Version: 4.0.1
  */
 
 namespace KamaClickCounter;

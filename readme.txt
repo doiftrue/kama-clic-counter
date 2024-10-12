@@ -1,7 +1,7 @@
 
 === Plugin Name ===
 Stable tag: trunk
-Tested up to: 6.4.3
+Tested up to: 6.6.2
 Contributors: Tkama
 Tags: analytics, statistics, count clicks, counter
 License: GPLv2 or later
@@ -43,6 +43,9 @@ Just customize CSS styles in plugin options page. Also you can add css styles in
 
 
 == Changelog ==
+
+= 4.0.1 =
+* FIX: Bugfix in "counter.js" script.
 
 = 4.0.0 =
 * Requires PHP >= 7.0.
