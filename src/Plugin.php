@@ -48,24 +48,16 @@ class Plugin {
 		$this->dir = dirname( $main_file_path );
 		$this->url = plugins_url( '', $main_file_path );
 
-		$this->info = get_file_data(
-			$main_file_path,
-			[
-				'name'    => 'Plugin Name',
-				'version' => 'Version',
-				'php_ver' => 'Requires PHP',
-			]
-		);
+		$this->info = get_file_data( $main_file_path, [
+			'name'    => 'Plugin Name',
+			'version' => 'Version',
+			'php_ver' => 'Requires PHP',
+		] );
 
 		$this->opt = new Options();
 	}
 
-	/**
-	 * The plugin initialization. Performs on `plugins_loaded` hook.
-	 *
-	 * @return void
-	 */
-	public function init() {
+	public function init(): void {
 
 		if( ! $this->check_dependencies() ){
 			return;
@@ -105,17 +97,11 @@ class Plugin {
 		$wpdb->kcc_clicks = $wpdb->prefix . 'kcc_clicks';
 	}
 
-	/**
-	 * @return void
-	 */
-	private function set_admin_access() {
+	private function set_admin_access(): void {
 		$this->admin_access = current_user_can( 'manage_options' );
 	}
 
-	/**
-	 * @return void
-	 */
-	private function set_manage_access() {
+	private function set_manage_access(): void {
 
 		$this->manage_access = apply_filters( 'kcc_manage_access', null );
 

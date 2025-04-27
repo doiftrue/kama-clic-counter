@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Kama Click Counter
- * Description: Count clicks on any link all over the site. Creates beautiful file download block in post content - use shortcode [download url="any file URL"]. Has widget of top clicks/downloads.
+ * Description: Counts clicks on any link across the entire site. Creates a beautiful file download block in post content using the shortcode `[download url="any file URL"]`. Includes a widget for top clicks/downloads.
  *
  * Text Domain: kama-clic-counter
  * Domain Path: /languages
@@ -10,10 +10,10 @@
  * Author URI: https://wp-kama.com
  * Plugin URI: https://wp-kama.com/77
  *
- * Requires PHP: 7.0
+ * Requires PHP: 7.1
  * Requires at least: 5.7
  *
- * Version: 4.0.1
+ * Version: 4.0.2
  */
 
 namespace KamaClickCounter;
@@ -25,7 +25,11 @@ require_once __DIR__ . '/admin/admin-functions.php';
 
 register_activation_hook( __FILE__, [ plugin(), 'activation' ] );
 
-add_action( 'plugins_loaded', [ plugin(), 'init' ] );
+/**
+ * NOTE: Init the plugin later on the 'after_setup_theme' hook to
+ * run current_user_can() later to avoid possible conflicts.
+ */
+add_action( 'after_setup_theme', [ plugin(), 'init' ] );
 
 function plugin(): Plugin {
 	static $instance;

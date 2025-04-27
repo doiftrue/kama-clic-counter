@@ -1,35 +1,35 @@
-
 === Plugin Name ===
 Stable tag: trunk
-Tested up to: 6.6.2
+Tested up to: 6.8.0
 Contributors: Tkama
 Tags: analytics, statistics, count clicks, counter
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Count clicks on any link all over the site. Creates beautiful file download block in post content. Has top downloads' widget.
+Count clicks on any link across the site. Creates a beautiful file download block in post content. Includes a widget for top downloads.
+
 
 
 == Description ==
 
-Using this plugin you will have statistics on clicks on file download or any other link all over the site.
+With this plugin, you can gather statistics on clicks for file downloads or any other link across the site.
 
-To insert file download block use `[download url="any file URL"]` shortcode.
+To insert a file download block, use the `[download url="any file URL"]` shortcode.
 
-Plugin don't have any additional instruments to uploads files. All files uploaded using standard wordpress media uploader. To create download block URL are used.
+The plugin does not include additional tools for uploading files. All files must be uploaded using the standard WordPress media uploader. The URLs are then used to create the download block.
 
-In additional, plugin has:
+Additionally, the plugin includes:
 
-* Button in visual editor to fast insert file download block shortcode.
-* Customizable widget, that allows output a list of "Top Downloads" or "Top link Clicks".
+* A button in the visual editor for quickly inserting the file download block shortcode.
+* A customizable widget that allows you to display a list of "Top Downloads" or "Top Link Clicks."
 
 
 
 == Frequently Asked Questions ==
 
-= How can I customize download block with CSS? =
+= How can I customize the download block with CSS? =
 
-Just customize CSS styles in plugin options page. Also you can add css styles into 'style.css' file of your theme.
+You can customize CSS styles on the plugin options page. Alternatively, you can add CSS styles to the `style.css` file of your theme.
 
 
 
@@ -38,179 +38,183 @@ Just customize CSS styles in plugin options page. Also you can add css styles in
 1. Statistics page.
 2. Plugin settings page.
 3. Single link edit page.
-4. TinyMce visual editor downloads button.
+4. TinyMCE visual editor downloads button.
 
 
 
 == Changelog ==
 
+= 4.0.2 =
+- CHG: Min PHP version 7.0 >> 7.1.
+- FIX: Plugin `init` moved to `after_setup_theme` hook to avoid some conflicts.
+- IMP: minor improvements.
+- UPD: Tested up to: WP 6.8.0
+
 = 4.0.1 =
-* FIX: Bugfix in "counter.js" script.
+* FIX: Bug in `counter.js` script.
 
 = 4.0.0 =
-* Requires PHP >= 7.0.
-* Backcompat removed.
-* Code refactored.
-* PHP class autoloader added.
-* PHP namespaces added.
-* Filter `kcc_admin_access` renamed to `kcc_manage_access`.
-* Filter `parce_kcc_url` renamed to `click_counter__parse_kcc_url`.
-* Filter `get_url_icon` renamed to `click_counter__get_icon_url`.
+* CHG: Requires PHP >= 7.0.
+* DEL: Removed backcompat code.
+* IMP: Code refactored.
+* ADD: PHP class autoloader.
+* ADD: PHP namespaces.
+* CHG: Filter `kcc_admin_access` renamed to `kcc_manage_access`.
+* CHG: Filter `parce_kcc_url` renamed to `click_counter__parse_kcc_url`.
+* CHG: Filter `get_url_icon` renamed to `click_counter__get_icon_url`.
 
 = 3.6.10 =
-* Minor improvemets.
+* IMP: Minor improvements.
 
 = 3.6.9 =
-* A little performance improvements and no jQuery dependence for base count js.
+* IMP: Performance improvements; no jQuery dependency for base count JS.
 
 = 3.6.8.2 =
-* BUG: some bug in previous version.
+* FIX: Bug in previous version.
 
 = 3.6.8.1 =
-* BUG: previously, the Protocol for external links was removed (leaved //).
-* FIX: compatibility with PHP 7.4
+* FIX: Protocol for external links issue (leaving `//`).
+* FIX: Compatibility with PHP 7.4.
 
 = 3.6.8 =
-* BUG: wrong count of URL with query parameters. Code improved!
-* BUG: in widget loop.
-* FIX: other minor fixes.
+* FIX: Wrong URL count with query parameters.
+* FIX: Bug in widget loop.
+* FIX: Other minor fixes.
 
 = 3.6.7.3 =
-* FIX: wrong `<title>` parsing in some cases.
+* FIX: `<title>` parsing issue.
 
 = 3.6.7 =
-* FIX: bug with wrong counting when 'hide link under id' option is enadled.
-* FIX: minor code fixes
-
+* FIX: Wrong counting with "hide link under id" option enabled.
+* FIX: Minor code fixes.
 
 = 3.6.6 =
-* FIX: access_role option not saved.
-* ADD: desc attr to shortcode.
+* FIX: `access_role` option not saved.
+* ADD: `desc` attribute to shortcode.
 
 = 3.6.5 =
-* FIX: because of missing http protocol, filesize was parsed incorrect sometimes (not parsed).
+* FIX: Filesize parsing issue due to missing HTTP protocol.
 
 = 3.6.4.2 =
-* CHG: Download block HTML markup and css styles changed a little - nothing important...
+* CHG: Minor changes to download block HTML markup and CSS styles.
 
 = 3.6.4 =
-* ADD: urldecode for incoming URLs writing to DB. Thank to Mark Carson!
-* NEW: Exclude url counting filter. See options page.
+* ADD: `urldecode` for incoming URLs when saving to DB. Thanks to Mark Carson.
+* NEW: Exclude URL counting filter added (see options page).
 
 = 3.6.3 =
-* FIX: esc_url for wp_redirect() to avoid spaces deletion. Thank to Mark Carson!
+* FIX: `esc_url()` for `wp_redirect()` to avoid spaces deletion. Thanks to Mark Carson.
 
 = 3.6.2 =
-* ADD: 'in_post' field on edit link admin page. It allow change ID of the post where link is...
-* ADD: sanitize data on edit link POST request
-* NEW: now all url in database saves as no protocol url - //site.ru/foo. So click on url 'http://site.ru/foo' and click on 'https://site.ru/foo' will be counted in one place.
-* FIX: search in admin list worked incorrectly if we begun search from pagination page...
-* FIX: correct detection of urls without protocol - //site.ru/foo
-* FIX: correct title detection of urls without protocol - //site.ru/foo. Now uses WP HTTP API to retrive external html of link...
-* FIX: some minor bug fixes
+* ADD: `in_post` field on edit link admin page to change associated post ID.
+* ADD: Sanitize data on edit link POST request.
+* NEW: Save URLs without protocol (`//site.ru/foo`).
+* FIX: Admin list search starting from pagination page.
+* FIX: Detection of URLs without protocol.
+* FIX: Title detection for protocol-less URLs using WP HTTP API.
+* FIX: Minor bug fixes.
 
 = 3.6.1 =
-* ADD: 'title' attribute to [download] shortcode. Ex: [download url="URL" title="my file title"]
-* ADD: improve tinymce button insert shortcode modal window - now you can find files in media library.
-* FIX: It just counted the clicks done with the left-click-mouse-button and not counted clicks with the mouse-wheel and not with "open link..." from context menu opened with right-mouse-click.
-
+* ADD: `title` attribute for `[download]` shortcode.
+* ADD: Improved TinyMCE button modal window (browse media library).
+* FIX: Count clicks from mouse wheel and context menu.
 
 = 3.6.0 =
-* CHG: class name 'KCClick' changed to 'KCCounter'. If you have external code for this plugin, change in it all 'KCClick::' or 'KCC::' to 'KCCounter::'!!!
-* CHG: Icon in Tinymce visual editor
+* CHG: Class name `KCClick` changed to `KCCounter`.
+* CHG: Icon in TinyMCE visual editor updated.
 
 = 3.5.1 =
-* CHG: move localisation to translate.wordpress.org
-* FIX: minor code fix
+* CHG: Move localization to translate.wordpress.org.
+* FIX: Minor code fix.
 
 = 3.5.0 =
-* FIX: XSS valneruble
-* CHG: Change class name 'KCC' to 'KCClick'
-* CHG: Translate PHP code to english. Now Russian is localization file...
+* FIX: XSS vulnerability fixed.
+* CHG: Class name `KCC` changed to `KCClick`.
+* CHG: Translate PHP code to English (Russian moved to localization file).
 
 = 3.4.9 =
-* FIX: Remove link from Admin-bar for Roles who has no plugin access
+* FIX: Remove admin-bar link for roles without plugin access.
 
 = 3.4.8 =
-* ADD: "click per day" data to edit link screen
+* ADD: "Clicks per day" data on edit link screen.
 
 = 3.4.7 - 3.4.7.3 =
-* FIX: table structure to work fine with 'utf8mb4_unicode_ci' charset
+* FIX: Table structure to support `utf8mb4_unicode_ci` charset.
 
 = 3.4.6 =
-* ADD: 'get_url_icon' filter to manage icons.
+* ADD: `get_url_icon` filter to manage icons.
 
 = 3.4.5 =
-* ADD: Administrator option to set access to plugin to other WP roles.
-* ADD: Option to add link to KCC Stat in admin bar.
-* DEL: no HTTP_REFERER block on direct kcc url use.
+* ADD: Administrator option to assign plugin access to other WP roles.
+* ADD: Option to add KCC Stats link to admin bar.
+* DEL: Removed `HTTP_REFERER` block on direct KCC URL use.
 
 = 3.4.4 =
-* CHANGE: is_file extention check method for url.
-* ADD: 'kcc_is_file' filter
-* ADD: widget option to set link to post instead of link to file
-* REMOVED: 'kcc_file_ext' filter
+* CHG: `is_file` extension check method for URL.
+* ADD: `kcc_is_file` filter.
+* ADD: Widget option to set link to post instead of file.
+* DEL: Removed `kcc_file_ext` filter.
 
 = 3.4.3 =
-* ADD hooks: 'parce_kcc_url', 'kcc_count_before', 'kcc_count_after'.
-* ADD: second parametr '$args' to 'kcc_insert_link_data' filter.
-* ADD: punycode support. Now links filter in admin table trying to find keyword in 'link_name' db column too, not only in 'link_url'.
-* FIX: It just count the clicks done with the left-click mouse button. Doesn't count clicks done with the mouse wheel, which opens in new tab. Also doesn't count clicks from mobile browsers. left click, mouse wheel, ctrl + left click, touch clicks (I test it in iphone – chrome and safari)
+* ADD: Hooks `parce_kcc_url`, `kcc_count_before`, `kcc_count_after`.
+* ADD: Second parameter `$args` to `kcc_insert_link_data` filter.
+* ADD: Punycode support for link filtering.
+* FIX: Count clicks from mouse wheel, touch, and ctrl+click.
 
 = 3.4.2 =
-* ADD: 'kcc_admin_access' filter. For possibility to change access capability.
-* FIX: redirect protection fix.
+* ADD: `kcc_admin_access` filter to change access capability.
+* FIX: Redirect protection fix.
 
 = 3.4.1 =
-* FIX: parse kcc url fix.
+* FIX: KCC URL parsing issue.
 
 = 3.4.0 =
-* ADD: Hide url in download block option. See the options page.
-* ADD: 'link_url' column index in DB for faster plugin work.
-* ADD: 'get_kcc_url', 'kcc_redefine_redirect', 'kcc_file_ext', 'kcc_insert_link_data' hooks.
-* ADD: Now plugin replace its ugly URL with original URL, when link hover.
-* ADD: Replace 'edit link' text for download block to icon. It's more convenient.
-* FIX: Correct updates of existing URLs. In some cases there appeared duplicates, when link contain '%' symbol (it could be cyrillic url or so on...)
-* FIX: XSS attack protection.
-* FIX: Many structure fix in code.
-
+* ADD: Option to hide URL in download block.
+* ADD: `link_url` column index in DB for performance.
+* ADD: Hooks `get_kcc_url`, `kcc_redefine_redirect`, `kcc_file_ext`, `kcc_insert_link_data`.
+* ADD: Replace ugly URL with original URL on hover.
+* ADD: Replace "edit link" text in download block with icon.
+* FIX: Duplicate URL updates (e.g., containing `%` symbol).
+* FIX: XSS protection added.
+* FIX: Code structure fixes.
 
 = 3.3.2 =
-* FIX: php notice
+* FIX: PHP notice.
 
 = 3.3.1 =
-* ADD: de_DE l10n, thanks to Volker Typke.
+* ADD: `de_DE` localization. Thanks to Volker Typke.
 
 = 3.3.0 =
-* ADD: l10n on plugin page.
-* ADD: menu to admin page.
-* FIX: antivirus wrongly says that file infected.
+* ADD: Localization on plugin page.
+* ADD: Menu to admin page.
+* FIX: Antivirus false positive detection.
 
 = 3.2.34 =
-* FIX: Some admin css change
+* FIX: Admin CSS changes.
 
 = 3.2.3.3 =
-* ADD: jQuery links become hidden. All jQuery affected links have #kcc anchor and onclick attr with countclick url
-* FIX: error with parse_url part. If url had "=" it was exploded...
+* ADD: jQuery links now hidden with `#kcc` anchor and `onclick` attribute.
+* FIX: `parse_url` bug when URL contained "=" character.
 
 = 3.2.3.2 =
-* FIX: didn't correctly redirected to url with " " character
-* ADD: round "clicks per day" on admin statistics page to one decimal digit
+* FIX: Redirect to URL with space (`" "`) character.
+* ADD: Round "clicks per day" value to one decimal on admin stats page.
 
 = 3.2.3.1 =
-* FIX: "back to stat" link on "edit link" admin page
+* FIX: "Back to stat" link on "edit link" admin page.
 
 = 3.2.3 =
-* FIX: redirects to https doesn't worked correctly
-* FIX: PHP less than 5.3 support
-* FIX: go back button on "edit link" admin page
-* FIX: localization
+* FIX: Redirects to HTTPS were not working correctly.
+* FIX: PHP < 5.3 support.
+* FIX: "Go back" button on "edit link" admin page.
+* FIX: Localization issues.
 
 = 3.2.2 =
-* ADD: "go back" button on "edit link" admin page
+* ADD: "Go back" button on "edit link" admin page.
 
 = 3.2.1 =
-Set autoreplace old shortcodes to new in DB during update: [download=""] [download url=""]
+* CHG: Auto-replace old shortcodes `[download=""]` with `[download url=""]` in DB during update.
 
 = 3.2 =
-Widget has been added
+* ADD: Widget feature.
+
