@@ -1,3 +1,5 @@
+// IMPORTANT: This file is included as a script in the HTML,
+// so ending with `;` is required!
 (function(){
 
 	const params = {
@@ -6,7 +8,7 @@
 		urlpatt     : '__urlpatt__',
 		aclass      : '__aclass__',
 		questSymbol : '__questSymbol__',
-		ampSymbol   : '__ampSymbol__'
+		ampSymbol   : '__ampSymbol__',
 	};
 
 	document.addEventListener( 'click', clickEventHandler );
@@ -17,35 +19,30 @@
 	function hideUglyKccUrl( ev ){
 		let a = ev.target;
 
-		// test `a[href*="'+ kcckey +'"]` selector
+		// test `a[href*={kcckey}]` selector
 		if( 'A' !== a.tagName || a.href.indexOf( params.kcckey ) === -1 ){
 			return;
 		}
 
-		let match = a.href.match( new RegExp( params.kcckey +'=(.*)' ) );
-		if( match && match[1] ){
-			let realurl = match[1];
-
-			if( parseInt( realurl ) ){
-				realurl = '/#download' + realurl;
-			}
-
-			// !!! before a.href
-			a.dataset.kccurl = a.href.replace( realurl, replaceUrlExtraSymbols( realurl ) );
-			a.href = realurl;
+		let match = a.href.match( new RegExp( params.kcckey +'=(.+)' ) );
+		let url = match[1] || '';
+		if( ! url ){
+			return;
 		}
-	}
 
-	function replaceUrlExtraSymbols( url ){
-		return url
-			.replace( /[?]/g, params.questSymbol )
-			.replace( /[&]/g, params.ampSymbol );
+		if( parseInt( url ) ){
+			url = '/#download' + url;
+		}
+
+		// !!! before a.href
+		a.dataset.kccurl = a.href.replace( url, replaceExtraSymbols( url ) );
+		a.href = url;
 	}
 
 	function clickEventHandler( ev ){
-		let a = ev.target.closest( `.${params.aclass}` );
 
-		if( !a || 'A' !== a.tagName ){
+		let a = ev.target.closest( 'a' );
+		if( ! a ){
 			return;
 		}
 
@@ -65,22 +62,26 @@
 					url = '/#download' + url;
 				}
 
-				a.href = url;
-				a.dataset.kccurl = href.replace( url, replaceUrlExtraSymbols( url ) );
+				a.dataset.kccurl = href.replace( url, replaceExtraSymbols( url ) );
 			}
 		}
 		// count class
 		else if( a.classList.contains( params.aclass ) ){
-			let pid  = a.dataset[ params.pidkey ] || '';
-
-			let kccurl = params.urlpatt.replace( '{in_post}', pid )
-				.replace( '{download}', ( a.dataset.kccdownload ? 1 : '' ) )
-				.replace( '{url}', replaceUrlExtraSymbols( href ) );
-
-			a.dataset.kccurl = kccurl;
+			a.dataset.kccurl = params.urlpatt
+				.replace( '{in_post}',  (a.dataset[ params.pidkey ] || '') )
+				.replace( '{download}', (a.dataset.kccdownload ? 1 : '') )
+				.replace( '{url}', replaceExtraSymbols( href ) );
 		}
 
-		a.dataset.kccurl && ( a.href = a.dataset.kccurl );
+		if( a.dataset.kccurl ){
+			a.href = a.dataset.kccurl;
+		}
+	}
+
+	function replaceExtraSymbols( url ){
+		return url
+			.replace( /[?]/g, params.questSymbol )
+			.replace( /[&]/g, params.ampSymbol );
 	}
 
 })();

@@ -4,11 +4,11 @@ namespace KamaClickCounter;
 
 class Counter {
 
-	const COUNT_KEY = 'kcccount';
+	public const COUNT_KEY = 'kcccount';
 
-	const PID_KEY = 'kccpid';
+	public const PID_KEY = 'kccpid';
 
-	const URL_PLACEHOLDERS = [
+	public const URL_PLACEHOLDERS = [
 		'?' => '__QUESTION__',
 		'&' => '__AMPERSAND__',
 	];
@@ -17,37 +17,36 @@ class Counter {
 	public $opt;
 
 	public function __construct( Options $options ) {
-
 		$this->opt = $options;
 	}
 
-	public function init() {
-
+	public function init(): void {
+//		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ], 99 );
 		add_action( 'wp_footer', [ $this, 'footer_js' ], 99 );
-
 		add_filter( 'init', [ $this, 'redirect' ], 0 );
 	}
 
+//	public function enqueue_scripts(): void {
+//		wp_enqueue_script( 'kama-click-counter', plugin()->url . '/assets/counter.js', [], '4.0.2', [
+//			'in_footer' => true,
+//			'strategy'  => 'defer',
+//		] );
+//	}
+
 	/**
 	 * A script to count links all over the site.
-	 *
-	 * @return void
 	 */
-	public function footer_js() {
-		$js = strtr(
-			file_get_contents( plugin()->dir . '/assets/counter.js' ),
-			[
-				'__kcckey__'      => self::COUNT_KEY,
-				'__pidkey__'      => self::PID_KEY,
-				'__urlpatt__'     => $this->get_kcc_url( '{url}', '{in_post}', '{download}' ),
-				'__aclass__'      => sanitize_html_class( $this->opt->links_class ),
-				'__questSymbol__' => self::URL_PLACEHOLDERS['?'],
-				'__ampSymbol__'   => self::URL_PLACEHOLDERS['&'],
-			]
-		);
+	public function footer_js(): void {
+		$js = file_get_contents( plugin()->dir . '/assets/counter.min.js' );
 
-		$js = preg_replace( '~[^:]//[^\n]+|[\t\n\r]~', ' ', $js ); // remove comments, \t\r\n
-		$js = preg_replace( '~[ ]{2,}~', ' ', $js );
+		$js = strtr( $js, [
+			'__kcckey__'      => self::COUNT_KEY,
+			'__pidkey__'      => self::PID_KEY,
+			'__urlpatt__'     => $this->get_kcc_url( '{url}', '{in_post}', '{download}' ),
+			'__aclass__'      => sanitize_html_class( $this->opt->links_class ),
+			'__questSymbol__' => self::URL_PLACEHOLDERS['?'],
+			'__ampSymbol__'   => self::URL_PLACEHOLDERS['&'],
+		] );
 		?>
 		<script id="kama-click-counter"><?= $js ?></script>
 		<?php
@@ -333,10 +332,8 @@ class Counter {
 
 	/**
 	 * Redirect to link url.
-	 *
-	 * @return void
 	 */
-	public function redirect() {
+	public function redirect(): void {
 
 		/**
 		 * Allows to override counting function.
@@ -417,7 +414,7 @@ class Counter {
 			$url = rtrim( home_url(), '/' ) . $url;
 		}
 
-		// remove http, https protocol if it's current site url
+		// remove http, https protocol if it's the current site url
 		if( strpos( $url, $_SERVER['HTTP_HOST'] ) ){
 			$url = self::del_http_protocol( $url );
 		}
@@ -473,7 +470,7 @@ class Counter {
 	}
 
 	/**
-	 * Retrieve title of a (local or remote) webpage.
+	 * Retrieve the title of a (local or remote) webpage.
 	 */
 	private function get_html_title( string $url ): string {
 

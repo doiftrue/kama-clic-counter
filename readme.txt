@@ -1,4 +1,4 @@
-=== Plugin Name ===
+=== Kama Click Counter ===
 Stable tag: trunk
 Tested up to: 6.8.0
 Contributors: Tkama
@@ -43,6 +43,10 @@ You can customize CSS styles on the plugin options page. Alternatively, you can 
 
 
 == Changelog ==
+
+= 4.0.3 =
+- FIX: Bugfix the counter not worked after the last updates for the count click of Download block. And more:
+- IMP: Minor improvements.
 
 = 4.0.2 =
 - CHG: Min PHP version 7.0 >> 7.1.
