@@ -13,7 +13,7 @@
  * Requires PHP: 7.1
  * Requires at least: 5.7
  *
- * Version: 4.0.2
+ * Version: 4.0.3
  */
 
 namespace KamaClickCounter;
