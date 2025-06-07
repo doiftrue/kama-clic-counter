@@ -7,7 +7,7 @@ class Download_Shortcode {
 	public function __construct() {
 	}
 
-	public function init() {
+	public function init(): void {
 		add_shortcode( 'download', [ $this, 'download_shortcode' ] );
 	}
 

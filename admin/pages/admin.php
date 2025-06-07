@@ -18,7 +18,7 @@ $edit_link_id = (int) ( $_GET['edit_link'] ?? 0 )
 
 <div class="wrap">
 	<?php
-	if( @ $this->msg ){
+	if( $this->msg ){
 		$is_error = preg_match( '~error~i', $this->msg );
 		echo '<div id="message" class="' . ( $is_error ? 'error' : 'updated' ) . '"><p>' . $this->msg . '</p></div>';
 	}

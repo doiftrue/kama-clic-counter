@@ -1,6 +1,6 @@
 === Kama Click Counter ===
 Stable tag: trunk
-Tested up to: 6.8.0
+Tested up to: 6.8.1
 Contributors: Tkama
 Tags: analytics, statistics, count clicks, counter
 License: GPLv2 or later
@@ -44,8 +44,12 @@ You can customize CSS styles on the plugin options page. Alternatively, you can 
 
 == Changelog ==
 
+= 4.0.4 =
+- IMP: To make it harder to add any links to the DB via a simple GET request, added additional check that the referer matches the current site. Thanks to Carmine Cappetti.
+- IMP: Minor improvements.
+
 = 4.0.3 =
-- FIX: Bugfix the counter not worked after the last updates for the count click of Download block. And more:
+- FIX: Bugfix the counter not worked after the last updates for the count click of Download block. And more.
 - IMP: Minor improvements.
 
 = 4.0.2 =

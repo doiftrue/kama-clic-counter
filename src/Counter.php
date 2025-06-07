@@ -166,7 +166,7 @@ class Counter {
 			$return = true;
 		}
 		else{
-			list( $insert_id, $insert_data ) = $this->insert_new_link( $args );
+			[ $insert_id, $insert_data ] = $this->insert_new_link( $args );
 			$return = $insert_id;
 		}
 
@@ -217,7 +217,7 @@ class Counter {
 	 * For some reason (possibly due to race condition) additional identical links sometimes appear in the database.
 	 * This method tries to find such links and removes them.
 	 */
-	private function check_and_delete_multiple_same_links( $WHERE ) {
+	private function check_and_delete_multiple_same_links( $WHERE ): void {
 		global $wpdb;
 
 		$all_links = $wpdb->get_results( "SELECT * FROM $wpdb->kcc_clicks WHERE $WHERE ORDER BY link_clicks DESC LIMIT 99" );
@@ -334,9 +334,11 @@ class Counter {
 	 * Redirect to link url.
 	 */
 	public function redirect(): void {
-
 		/**
-		 * Allows to override counting function.
+		 * Allows to override counting function completely.
+		 *
+		 * @param bool    $redefine_redirect If true - complately skip default redirect (count) logic.
+		 * @param Counter $counter           The Counter instance.
 		 */
 		if( apply_filters( 'kcc_redefine_redirect', false, $this ) ){
 			return;
@@ -353,31 +355,42 @@ class Counter {
 			return;
 		}
 
-		// count
-		if( apply_filters( 'kcc_do_count', true, $this ) ){
+		/// count
+
+		// NOTE: To make it harder to add any links to the DB via a simple GET request,
+		// we check that the referer matches the current site. If not, the click isn't counted.
+		$is_do_count = str_contains( $_SERVER['HTTP_REFERER'] ?? '', parse_url( get_home_url(), PHP_URL_HOST ) );
+
+		/**
+		 * Allows to change the count trigger logic.
+		 *
+		 * @param bool    $is_do_count  If true - do count, if false - do not count.
+		 * @param Counter $counter      The Counter instance.
+		 */
+		if( apply_filters( 'kcc_do_count', $is_do_count, $this ) ){
 			$this->do_count( $parsed );
 		}
 
+		/// get URL to redirect to if passed ID
 		if( is_numeric( $url ) ){
-			if( $link = $this->get_link( $url ) ){
+			$link = $this->get_link( $url );
+			if( $link ){
 				$url = $link->link_url;
 			}
-			else{
+			else {
 				trigger_error( sprintf( 'Error: kcc link with id %s not found.', $url ) );
 
 				return;
 			}
 		}
 
-		// redirect
+		/// redirect
 		if( headers_sent() ){
 			print "<script>location.replace('" . esc_url( $url ) . "');</script>";
 		}
-		else{
-
+		else {
 			// not to remove spaces in such URL: '?Subject=This has spaces' // thanks to: Mark Carson
 			$esc_url = esc_url( $url, null, 'not_display' );
-
 			wp_redirect( $esc_url, 303 );
 		}
 
@@ -387,8 +400,10 @@ class Counter {
 	/**
 	 * Parses the KCC URL.
 	 *
-	 * Конвертирует относительный путь "/blog/dir/file" в абсолютный
-	 * (от корня сайта) и чистит УРЛ. Расчитан на прием грязных (неочищенных) URL.
+	 * Converts the relative path "/blog/dir/file" to an absolute (from the root of the site)
+	 * and cleans the URL. Designed to handle dirty (uncleaned) URLs.
+	 *
+	 * @return array Parsed URL data or empty array if URL is invalid.
 	 */
 	public function parse_kcc_url( string $kcc_url ): array {
 
@@ -522,8 +537,8 @@ class Counter {
 
 		// get_headers
 		if( ! $size && function_exists( 'get_headers' ) ){
-			$headers = @ get_headers( $url, 1 );
-			$size = @ $headers['Content-Length'];
+			$headers = get_headers( $url, true );
+			$size = $headers['Content-Length'] ?? 0;
 		}
 
 		$size = (int) $size;
@@ -583,8 +598,8 @@ class Counter {
 	}
 
 	/**
-	 * Gets data of already existing link from the database.
-	 * Caches to a static variable, if it fails to get the link the cache is not set.
+	 * Gets data of an already existing link from the database.
+	 * Caches to a static variable, if it fails to get the link, the cache is not set.
 	 *
 	 * @param string|int $kcc_url      URL or link ID, or kcc_URL.
 	 * @param bool       $clear_cache  When you need to clear the link cache.

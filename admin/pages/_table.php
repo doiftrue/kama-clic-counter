@@ -42,7 +42,6 @@ else{
 }
 
 $links = $wpdb->get_results( $sql );
-
 if( ! $links ){
 	$alert = __( 'Nothing found.', 'kama-clic-counter' );
 }
@@ -93,17 +92,17 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 
 	<?php
 	function _kcc_head_text( $text, $col_name ) {
-		$_ord = $_GET['order'] ?? '';
-		$order2 = ( $_ord === 'ASC' ) ? 'DESC' : 'ASC';
-		$ind = ( $_ord === 'ASC' ) ? ' ▾' : ' ▴';
+		$_ord     = sanitize_text_field( $_GET['order'] ?? '' );
+		$order_by = sanitize_text_field( $_GET['order_by'] ?? '' );
+		$order2   = ( $_ord === 'ASC' ) ? 'DESC' : 'ASC';
+		$ind      = ( $_ord === 'ASC' ) ? ' ▾' : ' ▴';
 
-		$out = '
-		<a href="' . esc_url( add_query_arg( [
-				'order_by' => $col_name,
-				'order'    => $order2,
-			] ) ) . '" title="' . __( 'Sort', 'kama-clic-counter' ) . '">
-			' . $text . ' ' . ( @ $_GET['order_by'] === $col_name ? $ind : '' ) . '
-		</a>';
+		$out = sprintf( '<a href="%s" title="%s">%s %s</a>',
+			esc_url( add_query_arg( [ 'order_by' => $col_name, 'order' => $order2 ] ) ),
+			esc_attr__( 'Sort', 'kama-clic-counter' ),
+			esc_html( $text ),
+			( $order_by === $col_name ? $ind : '' )
+		);
 
 		return $out;
 	}

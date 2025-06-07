@@ -80,10 +80,7 @@ class Options {
 		return isset( $this->options[ $name ] );
 	}
 
-	/**
-	 * @return void
-	 */
-	public function set_options() {
+	public function set_options(): void {
 		$this->options = get_option( self::OPT_NAME, [] );
 
 		foreach( $this->get_def_options() as $name => $val ){

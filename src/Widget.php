@@ -2,7 +2,9 @@
 
 namespace KamaClickCounter;
 
-class Widget extends \WP_Widget {
+use WP_Widget;
+
+class Widget extends WP_Widget {
 
 	public function __construct() {
 		parent::__construct(
@@ -12,19 +14,18 @@ class Widget extends \WP_Widget {
 		);
 	}
 
-	public static function init() {
-
+	public static function init(): void {
 		if( ! plugin()->opt->widget ){
 			return;
 		}
 
-		add_action( 'widgets_init', function() {
+		add_action( 'widgets_init', static function() {
 			register_widget( self::class );
 		} );
 	}
 
 	/**
-	 * Widget output on Front.
+	 * Widget output on front.
 	 *
 	 * @param array $args  Widget Arguments.
 	 * @param array $opts  Saved data from widget settings.
@@ -123,6 +124,10 @@ class Widget extends \WP_Widget {
 
 	/**
 	 * Admin part of the widget
+	 *
+	 * @param array $instance  The settings for the particular instance of the widget.
+	 *
+	 * @return string|void Default return is 'noform'.
 	 */
 	public function form( $instance ) {
 
@@ -140,64 +145,66 @@ class Widget extends \WP_Widget {
 			<p>[link_description]</p>
 		';
 
-		$title        = $instance['title'] ?? __( 'Top Downloads', 'kama-clic-counter' );
-		$number       = $instance['number'] ?? 5;
-		$last_date    = $instance['last_date'] ?? '';
-		$template_css = $instance['template_css'] ?? preg_replace( '~^\t+~m', '', trim( $default_template_css ) );
-		$template     = $instance['template'] ?? preg_replace( '~^\t+~m', '', trim( $default_template ) );
+		$title          = $instance['title'] ?? __( 'Top Downloads', 'kama-clic-counter' );
+		$number         = $instance['number'] ?? 5;
+		$last_date      = $instance['last_date'] ?? '';
+		$template_css   = $instance['template_css'] ?? preg_replace( '~^\t+~m', '', trim( $default_template_css ) );
+		$template       = $instance['template'] ?? preg_replace( '~^\t+~m', '', trim( $default_template ) );
+		$sort           = $instance['sort'] ?? '';
+		$only_downloads = (int) ( $instance['only_downloads'] ?? 0 );
+		$use_post_url   = (int) ( $instance['use_post_url'] ?? 0 );
 		?>
 		<p>
-			<label><?php _e( 'Title:', 'kama-clic-counter' ); ?>
-				<input type="text" class="widefat" name="<?php echo $this->get_field_name( 'title' ); ?>"
-				       value="<?php echo esc_attr( $title ); ?>">
+			<label><?= __( 'Title:', 'kama-clic-counter' ) ?>
+				<input type="text" class="widefat" name="<?= $this->get_field_name( 'title' ) ?>" value="<?= esc_attr( $title ) ?>">
 			</label>
 		</p>
 
 		<p>
 			<label>
 				<input type="text" class="widefat" style="width:40px;"
-				       name="<?php echo $this->get_field_name( 'number' ); ?>"
-				       value="<?php echo esc_attr( $number ); ?>">
-				← <?php _e( 'how many links to show?', 'kama-clic-counter' ); ?>
+				       name="<?= $this->get_field_name( 'number' ) ?>"
+				       value="<?= esc_attr( $number ) ?>">
+				← <?= __( 'how many links to show?', 'kama-clic-counter' ) ?>
 			</label>
 		</p>
 
 		<p>
-			<select name="<?php echo $this->get_field_name( 'sort' ); ?>">
-				<option value="all_clicks" <?php selected( @ $instance['sort'], 'all_clicks' ) ?>><?php _e( 'all clicks', 'kama-clic-counter' ); ?></option>
-				<option value="clicks_per_day" <?php selected( @ $instance['sort'], 'clicks_per_day' ) ?>><?php _e( 'clicks per day', 'kama-clic-counter' ); ?></option>
-			</select> ← <?php _e( 'how to sort the result?', 'kama-clic-counter' ); ?>
+			<select name="<?= $this->get_field_name( 'sort' ) ?>">
+				<option value="all_clicks" <?php selected( $sort, 'all_clicks' ) ?>><?= __( 'all clicks', 'kama-clic-counter' ) ?></option>
+				<option value="clicks_per_day" <?php selected( $sort, 'clicks_per_day' ) ?>><?= __( 'clicks per day', 'kama-clic-counter' ) ?></option>
+			</select> ← <?= __( 'how to sort the result?', 'kama-clic-counter' ) ?>
 		</p>
 
 		<p>
 			<label>
 				<input type="text" class="widefat" style="width:100px;" placeholder="YYYY-MM-DD"
-				       name="<?php echo $this->get_field_name( 'last_date' ); ?>"
-				       value="<?php echo esc_attr( $last_date ); ?>">
-				← <?php _e( 'show links older then this data (ex. 2014-08-09)', 'kama-clic-counter' ); ?>
+				       name="<?= $this->get_field_name( 'last_date' ) ?>"
+				       value="<?= esc_attr( $last_date ) ?>">
+				← <?= __( 'show links older then this data (ex. 2014-08-09)', 'kama-clic-counter' ) ?>
 			</label>
 		</p>
 
 		<p>
 			<label>
-				<input type="checkbox" name="<?php echo $this->get_field_name( 'only_downloads' ); ?>" value="1" <?php checked( @ $instance['only_downloads'], 1 ) ?>> ← <?php _e( 'display only downloads, but not all links?', 'kama-clic-counter' ); ?>
+				<input type="checkbox" name="<?= $this->get_field_name( 'only_downloads' ) ?>" value="1" <?php checked( $only_downloads, 1 ) ?>> ← <?= __( 'display only downloads, but not all links?', 'kama-clic-counter' ) ?>
 			</label>
 		</p>
 		<p>
 			<label>
-				<input type="checkbox" name="<?php echo $this->get_field_name('use_post_url'); ?>" value="1" <?php checked( @ $instance['use_post_url'], 1 ) ?>> ← <?php _e('Use URL to post with the link, and not URL of the link ', 'kama-clic-counter' ); ?>
+				<input type="checkbox" name="<?= $this->get_field_name('use_post_url') ?>" value="1" <?php checked( $use_post_url, 1 ) ?>> ← <?= __('Use URL to post with the link, and not URL of the link ', 'kama-clic-counter' ) ?>
 			</label>
 		</p>
 		<hr>
 		<p>
-			<?php _e('Out template:', 'kama-clic-counter' ); ?>
-			<textarea class="widefat" style="height:100px;" name="<?php echo $this->get_field_name( 'template' ); ?>"><?php echo $template; ?></textarea>
-			<?php echo tpl_available_tags(); ?>
+			<?= __('Out template:', 'kama-clic-counter' ) ?>
+			<textarea class="widefat" style="height:100px;" name="<?= $this->get_field_name( 'template' ) ?>"><?= esc_textarea( $template ) ?></textarea>
+			<?= tpl_available_tags() ?>
 		</p>
 
 		<p>
-			<?php _e('Template CSS:', 'kama-clic-counter' ); ?>
-			<textarea class="widefat" style="height:100px;" name="<?php echo $this->get_field_name( 'template_css' ); ?>"><?php echo $template_css; ?></textarea>
+			<?= __('Template CSS:', 'kama-clic-counter' ) ?>
+			<textarea class="widefat" style="height:100px;" name="<?= $this->get_field_name( 'template_css' ) ?>"><?= esc_textarea( $template_css ) ?></textarea>
 		</p>
 		<?php
 	}

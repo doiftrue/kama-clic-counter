@@ -25,8 +25,7 @@ class Helpers {
 	 * @return mixed|null
 	 */
 	public static function get_icon_url( $link_url ) {
-
-		$url_path = parse_url( $link_url, PHP_URL_PATH );
+		$url_path = parse_url( $link_url, PHP_URL_PATH ) ?: '';
 
 		if( preg_match( '~\.([a-zA-Z0-9]{1,8})(?=$|\?.*)~', $url_path, $m ) ){
 			$icon_name = $m[1] . '.png';
