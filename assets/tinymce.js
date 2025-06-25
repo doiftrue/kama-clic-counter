@@ -7,10 +7,8 @@ tinymce.create( 'tinymce.plugins.KCC', {
 			title: tinymce.translate( 'kcc mcebutton name' ),
 
 			onclick: function(){
-
-				var $ = jQuery,
-					$bg = $( '.kcc_shortcode_bg' ),
-					$el = $( '.kcc_shortcode' );
+				var $bg = jQuery( '.kcc_shortcode_bg' );
+				var $el = jQuery( '.kcc_shortcode' );
 
 				// already exists - only show
 				if( $el.length ){
@@ -19,8 +17,8 @@ tinymce.create( 'tinymce.plugins.KCC', {
 				}
 
 				// create elements
-				$bg = $( '<div style="display:block;" id="wp-link-backdrop" class="kcc_shortcode_bg"></div>' ),
-					$el = $( '\
+				$bg = jQuery( '<div style="display:block;" id="wp-link-backdrop" class="kcc_shortcode_bg"></div>' ),
+				$el = jQuery( '\
 <div id="wp-link-wrap" class="wp-core-ui kcc_shortcode" style="display:block; height:auto; padding:2em;">\
 	<button type="button" class="button-link media-modal-close" style="text-align:center; text-decoration:none;"><span class="media-modal-icon"></span></button>\
 	<h3 style="margin-top:0;">' + tinymce.translate( 'kcc modal title' ) + '</h3>\
@@ -40,7 +38,7 @@ tinymce.create( 'tinymce.plugins.KCC', {
 
 				var $all = $bg.add( $el );
 
-				$( 'body' ).append( $all );
+				jQuery( 'body' ).append( $all );
 
 				$all.show();
 
@@ -74,7 +72,7 @@ tinymce.create( 'tinymce.plugins.KCC', {
 				$el.find( '.kcc_findfile' ).on( 'click', function( event ){
 					event.preventDefault();
 
-					var $el = $( this ),
+					var $el = jQuery( this ),
 						$urlInput = $el.parent().parent().find( '#kcc_link' );
 
 					if( frame ){
