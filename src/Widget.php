@@ -29,10 +29,8 @@ class Widget extends WP_Widget {
 	 *
 	 * @param array $args  Widget Arguments.
 	 * @param array $opts  Saved data from widget settings.
-	 *
-	 * @return void
 	 */
-	public function widget( $args, $opts ) {
+	public function widget( $args, $opts ): void {
 		global $wpdb;
 
 		if( ! $opts ){
@@ -46,7 +44,6 @@ class Widget extends WP_Widget {
 		$template = $opts->template;
 
 		$out__fn = static function( $wg_content ) use ( $args, $opts ) {
-
 			$title = apply_filters( 'widget_title', $opts->title );
 
 			$out = '';
@@ -74,26 +71,23 @@ class Widget extends WP_Widget {
 		}
 
 		$sql = "SELECT * FROM $wpdb->kcc_clicks WHERE link_clicks > 0 $AND $ORDER_BY LIMIT $number";
-
-		if( ! $results = $wpdb->get_results( $sql ) ){
+		$links = $wpdb->get_results( $sql );
+		$links = array_map( static fn( $ln ) => new Link_Item( $ln ), (array) $links );
+		if( ! $links ){
 			echo $out__fn( 'Error: empty SQL result' );
-
 			return;
 		}
 
-		// out
+		/// OUTPUT
 
 		$lis = [];
-		foreach( $results as $link ){
-
+		foreach( $links as $link ){
 			$tpl = $template; // temporary template
 
 			if( false !== strpos( $template, '[link_description' ) ){
-				$ln = 70;
-				$desc = ( mb_strlen( $link->link_description, 'utf-8' ) > $ln )
-					? mb_substr( $link->link_description, 0, $ln, 'utf-8' ) . ' ...'
-					: $link->link_description;
-
+				$width = 70;
+				$desc = wp_kses_post( $link->link_description );
+				$desc = mb_strimwidth( $desc, 0, $width, ' ...', 'utf-8' );
 				$tpl = str_replace( '[link_description]', $desc, $tpl );
 			}
 

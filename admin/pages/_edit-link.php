@@ -1,12 +1,12 @@
 <?php
 namespace KamaClickCounter;
 
-defined( 'ABSPATH' ) || exit;
-
 /**
  * @var Admin $this
  * @var int $edit_link_id
  */
+
+defined( 'ABSPATH' ) || exit;
 
 global $wpdb;
 
@@ -66,7 +66,7 @@ if( ! $link ){
 		<input type="text" style="width:100px;" name="up[link_date]" value="<?= esc_attr( $link->link_date ) ?>" readonly="readonly" /> <a href="#" style="margin-top:.5em; font-size:110%;" class="dashicons dashicons-edit" onclick="var $the = jQuery(this); $the.parent().find('input').removeAttr('readonly').focus(); $the.remove();"></a> <?php _e('Date added', 'kama-clic-counter') ?>
 	</p>
 
-	<?php if( $this->opt->in_post ){ ?>
+	<?php if( plugin()->opt->in_post ){ ?>
 		<p>
 			<input type="text" style="width:100px;" name="up[in_post]" value="<?= esc_attr( $link->in_post ) ?>" readonly="readonly" /> <a href="#" style="margin-top:.5em; font-size:110%;" class="dashicons dashicons-edit" onclick="var $the = jQuery(this); $the.parent().find('input').removeAttr('readonly').focus(); $the.remove();"></a> <?php _e('Post ID', 'kama-clic-counter') ?>
 			<?php

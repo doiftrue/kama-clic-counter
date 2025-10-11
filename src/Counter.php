@@ -13,25 +13,16 @@ class Counter {
 		'&' => '__AMPERSAND__',
 	];
 
-	/** @var Options */
-	public $opt;
+	public Options $opt;
 
 	public function __construct( Options $options ) {
 		$this->opt = $options;
 	}
 
 	public function init(): void {
-//		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ], 99 );
 		add_action( 'wp_footer', [ $this, 'footer_js' ], 99 );
-		add_filter( 'init', [ $this, 'redirect' ], 0 );
+		add_action( 'init', [ $this, 'redirect' ], 0 );
 	}
-
-//	public function enqueue_scripts(): void {
-//		wp_enqueue_script( 'kama-click-counter', plugin()->url . '/assets/counter.js', [], '4.0.2', [
-//			'in_footer' => true,
-//			'strategy'  => 'defer',
-//		] );
-//	}
 
 	/**
 	 * A script to count links all over the site.
@@ -261,9 +252,9 @@ class Counter {
 		if( false !== stripos( $insert_data['link_name'], 'xn--' ) ){
 			$host = parse_url( $insert_data['link_url'], PHP_URL_HOST );
 
-			$ind = new \KamaClickCounter\libs\idna_convert();
+			$idn = new \KamaClickCounter\libs\idna_convert();
 
-			$insert_data['link_name'] = str_replace( $host, $ind->decode( $host ), $insert_data['link_name'] );
+			$insert_data['link_name'] = str_replace( $host, $idn->decode( $host ), $insert_data['link_name'] );
 		}
 
 		$title = &$insert_data['link_title'];
@@ -462,7 +453,7 @@ class Counter {
 		/**
 		 * Allows to repalce {@see Counter::is_file()} method.
 		 *
-		 * @param bool $is_file
+		 * @param bool|null $is_file If null - use default method, if true/false - return this value.
 		 */
 		$return = apply_filters( 'kcc_is_file', null );
 		if( null !== $return ){
@@ -512,14 +503,12 @@ class Counter {
 	 * @return string Eg: `136.6 KB` or empty string if no size determined.
 	 */
 	private static function file_size( string $url ): string {
-
 		//$url = urlencode( $url );
 		$size = null;
 
 		// direct. considers WP subfolder install
 		$_home_url = self::del_http_protocol( home_url() );
-		if( ! $size && ( false !== strpos( $url, $_home_url ) ) ){
-
+		if( false !== strpos( $url, $_home_url ) ){
 			$path_part = str_replace( $_home_url, '', self::del_http_protocol( $url ) );
 			$file = wp_normalize_path( ABSPATH . $path_part );
 			// maybe WP in subfolder
@@ -554,7 +543,7 @@ class Counter {
 			$i++;
 		}
 
-		return substr( $size, 0, strpos( $size, '.' ) + 2 ) . ' ' . $type[ $i ];
+		return sprintf( '%.1f %s', floor( (float) $size * 10 ) / 10, $type[ $i ] );
 	}
 
 	/**
@@ -604,17 +593,16 @@ class Counter {
 	 * @param string|int $kcc_url      URL or link ID, or kcc_URL.
 	 * @param bool       $clear_cache  When you need to clear the link cache.
 	 *
-	 * @return object|void             NULL when the cache is cleared or if the data could not be retrieved.
+	 * @return Link_Item|null  Void when the cache is cleared or if the data could not be retrieved.
 	 */
-	public function get_link( $kcc_url, $clear_cache = false ) {
+	public function get_link( $kcc_url, $clear_cache = false ): ?Link_Item {
 		global $wpdb;
 
 		static $cache;
 
 		if( $clear_cache ){
 			unset( $cache[ $kcc_url ] );
-
-			return;
+			return null;
 		}
 
 		if( isset( $cache[ $kcc_url ] ) ){
@@ -645,15 +633,15 @@ class Counter {
 		}
 
 		$link_data = $wpdb->get_row( "SELECT * FROM $wpdb->kcc_clicks WHERE $WHERE" );
-
 		if( $link_data ){
-			$cache[ $kcc_url ] = $link_data;
+			$cache[ $kcc_url ] = new Link_Item( $link_data );
+			return $cache[ $kcc_url ];
 		}
 
-		return $link_data;
+		return null;
 	}
 
-	public function clear_link_cache( $kcc_url ) {
+	public function clear_link_cache( $kcc_url ): void {
 		$this->get_link( $kcc_url, $clear_cache = true );
 	}
 

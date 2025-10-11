@@ -8,8 +8,7 @@ namespace KamaClickCounter;
 
 class TinyMCE {
 
-	public static function init() {
-
+	public static function init(): void {
 		if( ! get_user_option( 'rich_editing' ) ){
 			return;
 		}
@@ -34,7 +33,6 @@ class TinyMCE {
 	}
 
 	public static function l10n( $mce_l10n ): array {
-
 		$l10n = array_map( 'esc_js', [
 			'kcc mcebutton name'       => __( 'Click Counter Shortcode', 'kama-clic-counter' ),
 			'kcc frame button title'   => __( 'Select file', 'kama-clic-counter' ),

@@ -4,9 +4,10 @@ namespace KamaClickCounter;
 
 /**
  * @property-read string $download_tpl
+ * @property-read string $download_tpl_styles
  * @property-read string $links_class
  * @property-read string $add_hits
- * @property-read int    $in_post
+ * @property-read bool   $in_post
  * @property-read bool   $hide_url
  * @property-read bool   $widget
  * @property-read bool   $toolbar_item
@@ -15,15 +16,14 @@ namespace KamaClickCounter;
  */
 class Options {
 
-	const OPT_NAME = 'kcc_options';
+	public const OPT_NAME = 'kcc_options';
 
-	/** @var array */
-	private $options;
+	private array $options;
 
-	private $default_options = [
+	private array $default_options = [
 		// download block template
-		'download_tpl' => '
-			<div class="kcc_block" title="Скачать" onclick="document.location.href=\'[link_url]\'">
+		'download_tpl' => <<<'HTML'
+			<div class="kcc_block" title="Скачать" onclick="document.location.href='[link_url]'">
 				<img class="alignleft" src="[icon_url]" alt="" />
 
 				<div class="kcc_info_wrap">
@@ -33,31 +33,30 @@ class Options {
 				</div>
 				[edit_link]
 			</div>
-
-			<style>
-				.kcc_block{ position:relative; padding:1em 0 2em; transition:background-color 0.4s; cursor:pointer; }
-				.kcc_block img{ float:left; width:2.1em; height:auto; margin:0; border:0px !important; box-shadow:none !important; }
-				.kcc_block .kcc_info_wrap{ padding-left:1em; margin-left:2.1em; }
-				.kcc_block a{ border-bottom:0; }
-				.kcc_block a.kcc_link{ text-decoration:none; display:block; font-size:150%; line-height:1.2; }
-				.kcc_block .kcc_desc{ color:#666; }
-				.kcc_block .kcc_info{ font-size:80%; color:#aaa; }
-				.kcc_block:hover a{ text-decoration:none !important; }
-				.kcc_block .kcc-edit-link{ position:absolute; top:0; right:.2em; }
-				.kcc_block:after{ content:""; display:table; clear:both; }
-			</style>
-		',
+			HTML,
+		'download_tpl_styles' => <<<'CSS'
+			.kcc_block{ position:relative; padding:1em 0 2em; transition:background-color 0.4s; cursor:pointer; }
+			.kcc_block img{ float:left; width:2.1em; height:auto; margin:0; border:0px !important; box-shadow:none !important; }
+			.kcc_block .kcc_info_wrap{ padding-left:1em; margin-left:2.1em; }
+			.kcc_block a{ border-bottom:0; }
+			.kcc_block a.kcc_link{ text-decoration:none; display:block; font-size:150%; line-height:1.2; }
+			.kcc_block .kcc_desc{ color:#666; }
+			.kcc_block .kcc_info{ font-size:80%; color:#aaa; }
+			.kcc_block:hover a{ text-decoration:none !important; }
+			.kcc_block .kcc-edit-link{ position:absolute; top:0; right:.2em; }
+			.kcc_block:after{ content:""; display:table; clear:both; }
+			CSS,
 		// css class for links in content (if not specified, this functionality is disabled).
 		'links_class'          => 'count',
 		// may be: '', 'in_title' or 'in_plain' (for simple links)
 		'add_hits'             => '',
-		'in_post'              => 1,
+		'in_post'              => true,
 		// should we hide the link or not?
 		'hide_url'             => false,
 		// enable a widget for WordPress?
-		'widget'               => 1,
+		'widget'               => true,
 		// Show a link to the stats in the admin bar?
-		'toolbar_item'         => 1,
+		'toolbar_item'         => true,
 		// The name of roles, other than administrator, to which control of the plugin is available.
 		'access_roles'         => [],
 		// Substrings. If the link has the specified substring, then don't count clicking on it.
@@ -73,7 +72,7 @@ class Options {
 	}
 
 	public function __set( $name, $val ) {
-		return null;
+		throw new \RuntimeException( 'Set values not allowed for this class. Use set_options() method.' );
 	}
 
 	public function __isset( $name ) {
@@ -81,10 +80,24 @@ class Options {
 	}
 
 	public function set_options(): void {
-		$this->options = get_option( self::OPT_NAME, [] );
+		$this->options = (array) get_option( self::OPT_NAME, [] );
 
 		foreach( $this->get_def_options() as $name => $val ){
 			if( ! isset( $this->options[ $name ] ) ){
+				// cast type
+				settype( $val, gettype( $this->default_options[ $name ] ) );
+				/**
+				 * @see self::$download_tpl
+				 * @see self::$download_tpl_styles
+				 * @see self::$links_class
+				 * @see self::$add_hits
+				 * @see self::$in_post
+				 * @see self::$hide_url
+				 * @see self::$widget
+				 * @see self::$toolbar_item
+				 * @see self::$access_roles
+				 * @see self::$url_exclude_patterns
+				 */
 				$this->options[ $name ] = $val;
 			}
 		}
@@ -101,20 +114,44 @@ class Options {
 	}
 
 	public function get_def_options(): array {
-
 		$options = $this->default_options;
-
 		$options['download_tpl'] = trim( preg_replace( '~^\t{4}~m', '', $options['download_tpl'] ) );
 
 		return $options;
 	}
 
-	public function update_option( array $new_data ): bool {
-		$up = update_option( self::OPT_NAME, $new_data );
-
+	public function update_option( array $new_options ): bool {
+		$new_options = $this->sanitize( $new_options );
+		$up = update_option( self::OPT_NAME, $new_options );
 		$up && $this->set_options();
 
 		return (bool) $up;
+	}
+
+	private function sanitize( array $options ): array {
+		foreach( $options as $key => & $val ){
+			is_string( $val ) && $val = trim( $val );
+
+			if( $key === 'download_tpl' ){
+				$val = wp_kses_post( $val );
+			}
+			elseif( $key === 'download_tpl_styles' ){
+				$val = wp_kses( $val, 'strip' );
+			}
+			elseif( $key === 'url_exclude_patterns' ){
+				// no sanitize... wp_kses($val, 'post');
+			}
+			// no sanitize...
+			elseif( is_array( $val ) ){
+				$val = array_map( 'sanitize_key', $val );
+			}
+			else{
+				$val = sanitize_key( $val );
+			}
+		}
+		unset( $val );
+
+		return $options;
 	}
 
 }

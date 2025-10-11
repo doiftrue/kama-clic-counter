@@ -4,18 +4,15 @@ namespace KamaClickCounter;
 
 class Admin {
 
-	/** @var string */
-	public $msg = '';
+	public string $msg = '';
 
-	/** @var Options */
-	private $opt;
+	private Options $opt;
 
-	public function __construct( $options ) {
+	public function __construct( Options $options ) {
 		$this->opt = $options;
 	}
 
-	public function init() {
-
+	public function init(): void {
 		if( ! plugin()->manage_access ){
 			return;
 		}
@@ -26,15 +23,12 @@ class Admin {
 
 		add_action( 'delete_attachment', [ $this, 'delete_link_by_attach_id' ] );
 		add_action( 'edit_attachment', [ $this, 'update_link_with_attach' ] );
-
 		add_filter( 'plugin_action_links_' . plugin()->basename, [ $this, 'plugins_page_links' ] );
-
-		add_filter( 'current_screen', [ $this, 'upgrade' ] );
+		add_action( 'current_screen', [ $this, 'upgrade' ] );
 	}
 
-	public function upgrade() {
-		$upgrader = new Upgrader();
-		$upgrader->init();
+	public function upgrade(): void {
+		( new Upgrader() )->init();
 	}
 
 	/**
@@ -42,15 +36,13 @@ class Admin {
 	 * For WP hook.
 	 */
 	public function plugins_page_links( $actions ) {
-
 		$actions[] = sprintf( '<a href="%s">%s</a>', $this->admin_page_url( 'settings' ), __( 'Settings', 'kama-clic-counter' ) );
 		$actions[] = sprintf( '<a href="%s">%s</a>', $this->admin_page_url(), __( 'Statistics', 'kama-clic-counter' ) );
 
 		return $actions;
 	}
 
-	public function admin_menu() {
-
+	public function admin_menu(): void {
 		// just in case
 		if( ! plugin()->manage_access ){
 			return;
@@ -68,8 +60,7 @@ class Admin {
 		add_action( "load-$hookname", [ $this, 'admin_page_load' ] );
 	}
 
-	public function admin_page_load() {
-
+	public function admin_page_load(): void {
 		// just in case...
 		if( ! plugin()->manage_access ){
 			return;
@@ -79,51 +70,26 @@ class Admin {
 
 		// save_options
 		if( isset( $_POST['save_options'] ) ){
-
 			if( ! wp_verify_nonce( $_nonce, 'save_options' ) && check_admin_referer( 'save_options' ) ){
 				$this->msg = 'error: nonce failed';
 
 				return;
 			}
 
-			$_POST = wp_unslash( $_POST );
-
-			// sanitize
-			$opt = $this->opt->get_def_options();
-			foreach( $opt as $key => & $val ){
-				$val = $_POST[ $key ] ?? '';
-
-				is_string( $val ) && $val = trim( $val );
-
-				if( $key === 'download_tpl' ){
-					// no sanitize...
-				}
-				elseif( $key === 'url_exclude_patterns' ){
-					// no sanitize... wp_kses($val, 'post');
-				}
-				// no sanitize...
-				elseif( is_array( $val ) ){
-					$val = array_map( 'sanitize_key', $val );
-				}
-				else{
-					$val = sanitize_key( $val );
-				}
+			$POST = wp_unslash( $_POST );
+			$new_options = [];
+			foreach( $this->opt->get_def_options() as $key => $_ ){
+				$new_options[ $key ] = $POST[ $key ] ?? plugin()->opt->$key;
 			}
-			unset( $val );
 
-			if( $this->opt->update_option( $opt ) ){
-				$this->msg = __( 'Settings updated.', 'kama-clic-counter' );
-			}
-			else{
-				$this->msg = __( 'Error: Failed to update the settings!', 'kama-clic-counter' );
-			}
+			$this->msg = $this->opt->update_option( $new_options )
+				? __( 'Settings updated.', 'kama-clic-counter' )
+				: __( 'Error: Failed to update the settings!', 'kama-clic-counter' );
 		}
 		// reset options
 		elseif( isset( $_POST['reset'] ) ){
-
 			if( ! wp_verify_nonce( $_nonce, 'save_options' ) && check_admin_referer( 'save_options' ) ){
 				$this->msg = 'error: nonce failed';
-
 				return;
 			}
 
@@ -132,17 +98,15 @@ class Admin {
 		}
 		// update_link
 		elseif( isset( $_POST['update_link'] ) ){
-
 			if( ! wp_verify_nonce( $_nonce, 'update_link' ) && check_admin_referer( 'update_link' ) ){
 				$this->msg = 'error: nonce failed';
-
 				return;
 			}
 
 			$data = wp_unslash( $_POST['up'] );
 			$id = (int) $data['link_id'];
 
-			// очистка
+			// sanitize
 			foreach( $data as $key => & $val ){
 				if( is_string( $val ) ){
 					$val = trim( $val );
@@ -163,10 +127,8 @@ class Admin {
 		}
 		// bulk delete_links
 		elseif( isset( $_POST['delete_link_ids'] ) ){
-
 			if( ! wp_verify_nonce( $_nonce, 'bulk_action' ) && check_admin_referer( 'bulk_action' ) ){
 				$this->msg = 'error: nonce failed';
-
 				return;
 			}
 
@@ -179,10 +141,8 @@ class Admin {
 		}
 		// delete single link
 		elseif( isset( $_GET['delete_link'] ) ){
-
 			if( ! wp_verify_nonce( $_nonce, 'delete_link' ) ){
 				$this->msg = 'error: nonce failed';
-
 				return;
 			}
 
@@ -195,26 +155,22 @@ class Admin {
 		}
 	}
 
-	public function admin_page_url( $args = [] ) {
-
+	public function admin_page_url( $args = [] ): string {
 		$url = admin_url( 'admin.php?page=' . plugin()->slug );
 
 		if( $args ){
-			if( 'settings' === $args ){
-				$url = add_query_arg( [ 'subpage' => 'settings' ], $url );
-			}
-			else {
-				$url = add_query_arg( $args, $url );
-			}
+			$url = ( 'settings' === $args )
+				? add_query_arg( [ 'subpage' => 'settings' ], $url )
+				: add_query_arg( $args, $url );
 		}
 
-		return $url;
+		return (string) $url;
 	}
 
 	/**
 	 * Callback for {@see add_options_page()} function parameter.
 	 */
-	public function options_page_output() {
+	public function options_page_output(): void {
 		include plugin()->dir . '/admin/pages/admin.php';
 	}
 

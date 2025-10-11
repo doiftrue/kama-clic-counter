@@ -4,41 +4,30 @@ namespace KamaClickCounter;
 
 class Plugin {
 
-	/** @var self */
-	public static $instance;
+	/** No end slash */
+	public string $dir; /* readonly */
 
-	/** @var array{ name:string, version:string, php_ver:string } */
-	public $info;
+	/** No end slash */
+	public string $url; /* readonly */
 
-	/** @var string No end slash */
-	public $dir;
+	public string $slug = 'kama-click-counter'; /* readonly */
+	public string $name;                        /* readonly */
+	public string $ver;                         /* readonly */
+	public string $php_ver;                     /* readonly */
 
-	/** @var string No end slash */
-	public $url;
+	/** WP basename: kama-clic-counter/kama_click_counter.php */
+	public string $basename;
 
-	/** @var string */
-	public $slug = 'kama-click-counter';
+	/** Access to manage options (edit links) */
+	public ?bool $manage_access;
 
-	/** @var string The plugin WP basename. Eg: nwp-popups/nwp-popups.php */
-	public $basename;
+	/** Access to admin options (change settings) */
+	public bool $admin_access;
 
-	/** @var bool Access to manage options (edit links) */
-	public $manage_access;
-
-	/** @var bool Access to admin options (change settings) */
-	public $admin_access;
-
-	/** @var Options */
-	public $opt;
-
-	/** @var Admin */
-	public $admin;
-
-	/** @var Counter */
-	public $counter;
-
-	/** @var Download_Shortcode */
-	public $download_shortcode;
+	public Options $opt;
+	public Admin $admin;
+	public Counter $counter;
+	public Download_Shortcode $download_shortcode;
 
 	public function __construct( string $main_file_path ) {
 		$this->set_wpdb_tables();
@@ -48,17 +37,19 @@ class Plugin {
 		$this->dir = dirname( $main_file_path );
 		$this->url = plugins_url( '', $main_file_path );
 
-		$this->info = get_file_data( $main_file_path, [
+		$info = get_file_data( $main_file_path, [
 			'name'    => 'Plugin Name',
 			'version' => 'Version',
 			'php_ver' => 'Requires PHP',
 		] );
+		$this->name    = $info['name'] ?? '';
+		$this->ver = $info['version'] ?? '';
+		$this->php_ver = $info['php_ver'] ?? '';
 
 		$this->opt = new Options();
 	}
 
 	public function init(): void {
-
 		if( ! $this->check_dependencies() ){
 			return;
 		}
@@ -90,7 +81,7 @@ class Plugin {
 		$Content_Replacer->init();
 	}
 
-	public function set_wpdb_tables() {
+	public function set_wpdb_tables(): void {
 		global $wpdb;
 
 		$wpdb->tables[] = 'kcc_clicks';
@@ -98,24 +89,22 @@ class Plugin {
 	}
 
 	private function set_admin_access(): void {
-		$this->admin_access = current_user_can( 'manage_options' );
+		$this->admin_access = (bool) current_user_can( 'manage_options' );
 	}
 
 	private function set_manage_access(): void {
-
 		$this->manage_access = apply_filters( 'kcc_manage_access', null );
 
 		if( $this->manage_access !== null ){
+			$this->manage_access = (bool) $this->manage_access;
 			return;
 		}
 
-		$this->manage_access = current_user_can( 'manage_options' );
+		$this->manage_access = (bool) current_user_can( 'manage_options' );
 
 		if( ! $this->manage_access && $this->opt->access_roles ){
-
 			foreach( wp_get_current_user()->roles as $role ){
-
-				if( in_array( $role, (array) $this->opt->access_roles, 1 ) ){
+				if( in_array( $role, $this->opt->access_roles, true ) ){
 					$this->manage_access = true;
 					break;
 				}
@@ -123,8 +112,7 @@ class Plugin {
 		}
 	}
 
-	public function add_toolbar_menu( $toolbar ) {
-
+	public function add_toolbar_menu( $toolbar ): void {
 		$toolbar->add_menu( [
 			'id'    => 'kcc',
 			'title' => 'Click Counter',
@@ -133,9 +121,9 @@ class Plugin {
 	}
 
 	public function check_dependencies(): bool {
-		if( version_compare( PHP_VERSION, $this->info['php_ver'], '<=' ) ){
+		if( version_compare( PHP_VERSION, $this->php_ver, '<=' ) ){
 			Helpers::notice_message(
-				'<b>Kama Click Counter</b> plugin requires PHP version <b>' . $this->info['php_ver'] . '</b> or higher. Please upgrade PHP or diactivate the plugin.',
+				'<b>Kama Click Counter</b> plugin requires PHP version <b>' . $this->php_ver . '</b> or higher. Please upgrade PHP or diactivate the plugin.',
 				'error'
 			);
 
@@ -145,7 +133,7 @@ class Plugin {
 		return true;
 	}
 
-	public function activation() {
+	public function activation(): void {
 		global $wpdb;
 
 		if( ! $this->check_dependencies() ){
