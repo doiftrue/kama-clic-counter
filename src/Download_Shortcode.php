@@ -9,16 +9,28 @@ class Download_Shortcode {
 
 	public function init(): void {
 		add_shortcode( 'download', [ $this, 'download_shortcode' ] );
-		add_action( 'wp_head', [ __CLASS__, 'add_custom_styles' ], 999 );
+		add_action( 'wp_head', [ __CLASS__, 'head_tpl_styles' ], 999 );
 	}
 
-	public static function add_custom_styles(): void {
+	public static function head_tpl_styles(): void {
 		global $post;
-		$styles = plugin()->opt->download_tpl_styles;
-		if( ! $styles || ! $post || ! has_shortcode( $post->post_content, 'download' ) ){
-			return;
+		if( $post && str_contains( $post->post_content, '[download' ) ){
+			echo self::get_styles();
 		}
-		echo sprintf( "\n".'<style id="kama-click-counter-shortcode">%s</style>', esc_html( $styles ) );
+	}
+
+	private static function get_styles(): string {
+		static $once = 0;
+		if( $once++ ){
+			return '';
+		}
+
+		$styles = plugin()->opt->download_tpl_styles;
+		if( ! $styles ){
+			return '';
+		}
+
+		return sprintf( "\n".'<style id="kama-click-counter-shortcode">%s</style>' . "\n", esc_html( $styles ) );
 	}
 
 	public function download_shortcode( $atts = [] ): string {
@@ -65,7 +77,7 @@ class Download_Shortcode {
 		$atts['title'] && ( $tpl = str_replace( '[link_title]',       esc_html( $atts['title'] ), $tpl ) );
 		$atts['desc']  && ( $tpl = str_replace( '[link_description]', esc_html( $atts['desc'] ), $tpl ) );
 
-		return $this->tpl_replace_shortcodes( $tpl, $link );
+		return self::get_styles() . $this->tpl_replace_shortcodes( $tpl, $link );
 	}
 
 	/**
