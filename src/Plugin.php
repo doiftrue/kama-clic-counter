@@ -60,7 +60,7 @@ class Plugin {
 		$this->set_admin_access();
 
 		if( is_admin() ){
-			$this->admin = new Admin( $this->opt );
+			$this->admin = new Admin();
 			$this->admin->init();
 		}
 
@@ -69,7 +69,7 @@ class Plugin {
 
 		// admin_bar
 		if( $this->opt->toolbar_item && $this->manage_access ){
-			add_action( 'admin_bar_menu', [ $this, 'add_toolbar_menu' ], 90 );
+			add_action( 'admin_bar_menu', [ $this, '_add_toolbar_menu' ], 90 );
 		}
 
 		Widget::init();
@@ -77,11 +77,11 @@ class Plugin {
 		$this->download_shortcode = new Download_Shortcode();
 		$this->download_shortcode->init();
 
-		$Content_Replacer = new Content_Replacer();
-		$Content_Replacer->init();
+		$content_replacer = new Content_Replacer();
+		$content_replacer->init();
 	}
 
-	public function set_wpdb_tables(): void {
+	private function set_wpdb_tables(): void {
 		global $wpdb;
 
 		$wpdb->tables[] = 'kcc_clicks';
@@ -112,7 +112,7 @@ class Plugin {
 		}
 	}
 
-	public function add_toolbar_menu( $toolbar ): void {
+	public function _add_toolbar_menu( $toolbar ): void {
 		$toolbar->add_menu( [
 			'id'    => 'kcc',
 			'title' => 'Click Counter',
@@ -121,7 +121,7 @@ class Plugin {
 	}
 
 	public function check_dependencies(): bool {
-		if( version_compare( PHP_VERSION, $this->php_ver, '<=' ) ){
+		if( version_compare( PHP_VERSION, $this->php_ver, '<' ) ){
 			Helpers::notice_message(
 				'<b>Kama Click Counter</b> plugin requires PHP version <b>' . $this->php_ver . '</b> or higher. Please upgrade PHP or diactivate the plugin.',
 				'error'

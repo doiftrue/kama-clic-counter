@@ -2,7 +2,6 @@
 namespace KamaClickCounter;
 
 /**
- * @var Admin $this
  * @var int $edit_link_id
  */
 
@@ -20,62 +19,83 @@ if( ! $link ){
 }
 
 ?>
-<br>
-<p>
+<style>
+	.editlink__goback{ padding:1.5rem 0; }
+	.editlinkform{ position:relative; width:900px; display:flex; flex-direction:column; gap:1.2em; }
+	.editlinkform__img{ position:absolute; right:350px; width:50px; }
+	.editlinkform__row{ display:flex; gap:.5em; align-items:center; }
+	.editlinkform__row input, .editlinkform__row textarea{ width:min(40rem,70vw); }
+	.editlinkform__editbtn{ position:absolute; margin-top:.5em; margin-left:-1.8em; cursor:pointer; opacity:0.5; }
+</style>
+<div class="editlink__goback">
 	<?php
 	$referer = sanitize_text_field( $_POST['local_referer'] ?? preg_replace( '~https?://[^/]+~', '', $_SERVER['HTTP_REFERER'] ?? '' ) );
-
 	if( $referer === remove_query_arg( 'edit_link', $_SERVER['REQUEST_URI'] ) ){
 		$referer = '';
 	}
 
 	if( $referer ){
-		echo '<a class="button" href="' . esc_url( $referer ) . '">← ' . __( 'Go back', 'kama-clic-counter' ) . '</a>';
+		echo sprintf( '<a class="button" href="%s">← %s</a>', esc_url( $referer ), __( 'Go back', 'kama-clic-counter' ) );
 	}
 	?>
-</p>
+</div>
 
-<form style="position:relative;width:900px;" method="post" action="">
+<form class="editlinkform" method="post" action="">
 	<?php wp_nonce_field('update_link'); ?>
-
 	<input type="hidden" name="local_referer" value="<?= esc_attr( $referer ) ?>" />
 
-	<img style="position:absolute; top:-10px; right:350px; width:50px;" src="<?= esc_attr( Helpers::get_icon_url( $link->link_url ) ) ?>" alt="" />
-	<p>
-		<input type="number" style="width:100px;" name="up[link_clicks]" value='<?= esc_attr( $link->link_clicks ) ?>' /> <?php printf( __('Clicks. Per day: %s', 'kama-clic-counter'), ($var=get_clicks_per_day($link)) ? $var : 0 ) ?></p>
-	<p>
-		<input type="text" style='width:100px;' name='up[file_size]' value='<?= esc_attr( $link->file_size ) ?>' /> <?php _e('File size', 'kama-clic-counter') ?>
-	</p>
-	<p>
-		<input type="text" style='width:600px;' name='up[link_name]' value='<?= esc_attr( $link->link_name ) ?>' /> <?php _e('File name', 'kama-clic-counter') ?>
-	</p>
-	<p>
-		<input type="text" style='width:600px;' name='up[link_title]' value='<?= esc_attr( $link->link_title ) ?>' /> <?php _e('File title', 'kama-clic-counter') ?>
-	</p>
-	<p>
-		<textarea type="text" style='width:600px;height:70px;' name='up[link_description]' ><?= esc_textarea( stripslashes( $link->link_description ) ) ?></textarea> <?php _e('File description', 'kama-clic-counter') ?>
-	</p>
-	<p>
-		<input type="text" style="width:600px;" name="up[link_url]" value="<?= esc_attr( $link->link_url ) ?>" readonly="readonly" />
-		<a href="#" style="margin-top:.5em; font-size:110%;" class="dashicons dashicons-edit"
-		   onclick="const $the = jQuery(this) $the.parent().find('input').removeAttr('readonly').focus(); $the.remove();"
-		></a>
-		<?php _e('Link to file', 'kama-clic-counter') ?>
-	</p>
-	<p>
-		<input type="text" style="width:100px;" name="up[link_date]" value="<?= esc_attr( $link->link_date ) ?>" readonly="readonly" /> <a href="#" style="margin-top:.5em; font-size:110%;" class="dashicons dashicons-edit" onclick="var $the = jQuery(this); $the.parent().find('input').removeAttr('readonly').focus(); $the.remove();"></a> <?php _e('Date added', 'kama-clic-counter') ?>
-	</p>
+	<img class="editlinkform__img" src="<?= esc_attr( Helpers::get_icon_url( $link->link_url ) ) ?>" alt="" />
+
+	<div class="editlinkform__row">
+		<input type="number" style="width:10rem;" name="up[link_clicks]" value='<?= esc_attr( $link->link_clicks ) ?>' /> <?php printf( __('Clicks. Per day: %s', 'kama-clic-counter'), ($var=get_clicks_per_day($link)) ? $var : 0 ) ?></div>
+	<div class="editlinkform__row">
+		<input type="text" style='width:10rem;' name="up[file_size]" value='<?= esc_attr( $link->file_size ) ?>' /> <?= esc_html__('File size', 'kama-clic-counter') ?>
+	</div>
+	<div class="editlinkform__row">
+		<input type="text" name="up[link_name]" value='<?= esc_attr( $link->link_name ) ?>' /> <?= esc_html__('File name', 'kama-clic-counter') ?>
+	</div>
+	<div class="editlinkform__row">
+		<input type="text" name="up[link_title]" value='<?= esc_attr( $link->link_title ) ?>' /> <?= esc_html__('File title', 'kama-clic-counter') ?>
+	</div>
+	<div class="editlinkform__row">
+		<textarea type="text" rows="4" name='up[link_description]' ><?= esc_textarea( stripslashes( $link->link_description ) ) ?></textarea> <?= esc_html__('File description', 'kama-clic-counter') ?>
+	</div>
+	<?php
+	$edit_btn = <<<'HTML'
+		<span class="editlinkform__editbtn" onclick="this.parentNode.querySelector('input').removeAttribute('readonly'); this.remove();">&#128393;</span>
+		HTML;
+	?>
+	<div class="editlinkform__row">
+		<div>
+			<input type="text" name="up[link_url]" value="<?= esc_attr( $link->link_url ) ?>" readonly="readonly" />
+			<?= $edit_btn ?>
+		</div>
+		<?= esc_html__('Link to file', 'kama-clic-counter') ?>
+	</div>
+	<div class="editlinkform__row">
+		<div>
+			<input type="text" style="width:10rem;" name="up[link_date]" value="<?= esc_attr( $link->link_date ) ?>" readonly="readonly" />
+			<?= $edit_btn ?>
+		</div>
+		<?= esc_html__('Date added', 'kama-clic-counter') ?>
+	</div>
 
 	<?php if( plugin()->opt->in_post ){ ?>
-		<p>
-			<input type="text" style="width:100px;" name="up[in_post]" value="<?= esc_attr( $link->in_post ) ?>" readonly="readonly" /> <a href="#" style="margin-top:.5em; font-size:110%;" class="dashicons dashicons-edit" onclick="var $the = jQuery(this); $the.parent().find('input').removeAttr('readonly').focus(); $the.remove();"></a> <?php _e('Post ID', 'kama-clic-counter') ?>
+		<div class="editlinkform__row">
+			<div>
+				<input type="text" style="width:10rem;" name="up[in_post]" value="<?= esc_attr( $link->in_post ) ?>" readonly="readonly" />
+				<?= $edit_btn ?>
+			</div>
+			<?= esc_html__('Post ID', 'kama-clic-counter') ?>
 			<?php
 			if( $link->in_post ){
 				$cpost = get_post( $link->in_post );
-				echo '. '. __( 'Current:', 'kama-clic-counter' ) . ( $cpost ? ' <a href="'. get_permalink($cpost) .'">'. esc_html( get_post($link->in_post)->post_title ) .'</a>' : ' - ' );
+				echo $cpost
+					? sprintf( ': <a href="%s" target="_blank">%s</a>', get_permalink( $cpost ), esc_html( get_post( $link->in_post )->post_title ) )
+					: ' - ';
 			}
 			?>
-		</p>
+		</div>
 	<?php } ?>
 
 	<input type="hidden" name="up[link_id]" value="<?= esc_attr( $edit_link_id ) ?>" />
@@ -84,7 +104,7 @@ if( ! $link ){
 	<p style="margin-top: 3rem">
 		<input type="submit" name="update_link" class="button-primary" value="<?= esc_attr__( 'Save changes', 'kama-clic-counter' ) ?>" />
 		&nbsp;&nbsp;&nbsp;&nbsp;
-		<a class="button kcc-alert-button" href="<?= esc_url( $this->delete_link_url( $link->link_id ) ) ?>"
+		<a class="button kcc-alert-button" href="<?= esc_url( plugin()->admin->delete_link_url( $link->link_id ) ) ?>"
 		   onclick="return confirm('<?= __('Sure to delete it?', 'kama-clic-counter') ?>');">
 			<?= __('Delete', 'kama-clic-counter') ?>
 		</a>

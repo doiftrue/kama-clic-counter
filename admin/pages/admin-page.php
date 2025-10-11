@@ -4,23 +4,19 @@ namespace KamaClickCounter;
 
 defined( 'ABSPATH' ) || exit;
 
-/**
- * @var Admin $this
- */
-
 $subpage = $_GET['subpage'] ?? '';
-$edit_link_id = (int) ( $_GET['edit_link'] ?? 0 )
+$edit_link_id = (int) ( $_GET['edit_link'] ?? 0 );
 ?>
-
 <style>
 	<?= file_get_contents( plugin()->dir . '/assets/admin-page.css' ) ?>
 </style>
 
 <div class="wrap">
 	<?php
-	if( $this->msg ){
-		$is_error = preg_match( '~error~i', $this->msg );
-		echo '<div id="message" class="' . ( $is_error ? 'error' : 'updated' ) . '"><p>' . $this->msg . '</p></div>';
+	$msg = plugin()->admin->admin_page->msg;
+	if( $msg ){
+		$is_error = preg_match( '~error~i', $msg );
+		echo '<div id="message" class="' . ( $is_error ? 'error' : 'updated' ) . '"><p>' . $msg . '</p></div>';
 	}
 
 	require plugin()->dir . '/admin/pages/_admin-menu.php';

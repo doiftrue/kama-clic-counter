@@ -7,8 +7,7 @@ class Content_Replacer {
 	public function __construct() {
 	}
 
-	public function init() {
-
+	public function init(): void {
 		if( plugin()->opt->links_class ){
 			add_filter( 'the_content', [ $this, 'modify_links' ] );
 		}
@@ -18,7 +17,6 @@ class Content_Replacer {
 	 * Change links that have special class in given content.
 	 */
 	public function modify_links( string $content ): string {
-
 		$links_class = plugin()->opt->links_class;
 
 		if( false === strpos( $content, $links_class ) ){
@@ -43,7 +41,7 @@ class Content_Replacer {
 		preg_match_all( '~[^=]+=([\'"])[^\1]+?\1~', $link_attrs, $args );
 
 		foreach( $args[0] as $pair ){
-			list( $tag, $value ) = explode( '=', $pair, 2 );
+			[ $tag, $value ] = explode( '=', $pair, 2 );
 			$value = trim( trim( $value, '"\'' ) );
 			$args[ trim( $tag ) ] = $value;
 		}

@@ -8,8 +8,8 @@ class Helpers {
 	 * @param string $message  HTML.
 	 * @param string $type     One of: success|error|warning|info.
 	 */
-	public static function notice_message( string $message, string $type = 'warning' ) {
-		add_action( 'admin_notices', function() use ( $message, $type ) {
+	public static function notice_message( string $message, string $type = 'warning' ): void {
+		add_action( 'admin_notices', static function() use ( $message, $type ) {
 			?>
 			<div id="message" class="notice <?= esc_attr( "notice-$type" ) ?>">
 				<p><?= wp_kses_post( $message ) ?></p>

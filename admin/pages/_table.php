@@ -2,9 +2,6 @@
 
 namespace KamaClickCounter;
 
-/**
- * @var Admin $this
- */
 defined( 'ABSPATH' ) || exit;
 
 global $wpdb;
@@ -158,7 +155,7 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 					) : '',
 				sprintf( '<a href="%s">URL</a>', esc_url( $link->link_url ) ),
 				sprintf( '<span class="trash"><a class="submitdelete" href="%s">%s</a></span>',
-					esc_url( $this->delete_link_url( $link->link_id ) ),
+					esc_url( plugin()->admin->delete_link_url( $link->link_id ) ),
 					__( 'Delete', 'kama-clic-counter' )
 				),
 				sprintf( '<span style="color:#999;">%s</span>', esc_html( $link->link_title ) ),

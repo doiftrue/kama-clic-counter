@@ -1,10 +1,6 @@
 <?php
 namespace KamaClickCounter;
 
-/**
- * @var Admin $this
- */
-
 defined( 'ABSPATH' ) || exit;
 
 $subpage = $_GET['subpage'] ?? '';
@@ -17,7 +13,7 @@ $edit_link = $edit_link
 $settings_link = sprintf(
 	'<a class="nav-tab %s" href="%s">%s</a>',
 	( ( $subpage === 'settings' ) ? 'nav-tab-active' : '' ),
-	$this->admin_page_url( 'settings' ),
+	plugin()->admin->admin_page_url( 'settings' ),
 	__( 'Settings', 'kama-clic-counter' )
 );
 
@@ -26,7 +22,7 @@ $settings_link = sprintf(
 	<small><code>v<?= plugin()->ver ?></code></small>
 	<br><br>
 
-	<a class="nav-tab <?= ( ( ! $subpage && ! $edit_link ) ? 'nav-tab-active' : '' ) ?>" href="<?= $this->admin_page_url() ?>">
+	<a class="nav-tab <?= ( ( ! $subpage && ! $edit_link ) ? 'nav-tab-active' : '' ) ?>" href="<?= plugin()->admin->admin_page_url() ?>">
 		<?= __( 'List', 'kama-clic-counter' ) ?>
 	</a>
 	<?= plugin()->admin_access ? $settings_link : '' ?>

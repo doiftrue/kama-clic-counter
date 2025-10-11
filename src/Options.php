@@ -23,28 +23,28 @@ class Options {
 	private array $default_options = [
 		// download block template
 		'download_tpl' => <<<'HTML'
-			<div class="kcc_block" title="Скачать" onclick="document.location.href='[link_url]'">
+			<div class="kcc_block">
 				<img class="alignleft" src="[icon_url]" alt="" />
 
 				<div class="kcc_info_wrap">
-					<a class="kcc_link" href="[link_url]" title="[link_name]">Скачать: [link_title]</a>
+					<a class="kcc_link" href="[link_url]" title="[link_name]">[link_title] <small>(download)</small></a>
 					<div class="kcc_desc">[link_description]</div>
-					<div class="kcc_info">Скачано: [link_clicks], размер: [file_size], дата: [link_date:d M. Y]</div>
+					<div class="kcc_info">Downloaded: [link_clicks]. Size: [file_size]. Date: [link_date:d M. Y]</div>
 				</div>
 				[edit_link]
 			</div>
 			HTML,
 		'download_tpl_styles' => <<<'CSS'
-			.kcc_block{ position:relative; padding:1em 0 2em; transition:background-color 0.4s; cursor:pointer; }
-			.kcc_block img{ float:left; width:2.1em; height:auto; margin:0; border:0px !important; box-shadow:none !important; }
-			.kcc_block .kcc_info_wrap{ padding-left:1em; margin-left:2.1em; }
-			.kcc_block a{ border-bottom:0; }
-			.kcc_block a.kcc_link{ text-decoration:none; display:block; font-size:150%; line-height:1.2; }
-			.kcc_block .kcc_desc{ color:#666; }
-			.kcc_block .kcc_info{ font-size:80%; color:#aaa; }
-			.kcc_block:hover a{ text-decoration:none !important; }
+			.kcc_block{ position:relative; display:flex; align-items:center; gap:1em; padding:1em 0 2em; }
+			.kcc_block img{ display:block; width:3em; height:auto; align-self:start; object-fit:contain;
+				margin:0; border:0 !important; box-shadow:none !important;
+			}
+			.kcc_info_wrap{ display:flex; flex-direction:column; gap:.4em; }
+			.kcc_block a.kcc_link{ display:block; font-size:150%; line-height:1.2; }
+			.kcc_block .kcc_desc{ opacity:.7; line-height:1.3; }
+			.kcc_block .kcc_desc:empty{ display:none; }
+			.kcc_block .kcc_info{ font-size:80%; opacity:.5; }
 			.kcc_block .kcc-edit-link{ position:absolute; top:0; right:.2em; }
-			.kcc_block:after{ content:""; display:table; clear:both; }
 			CSS,
 		// css class for links in content (if not specified, this functionality is disabled).
 		'links_class'          => 'count',
@@ -82,25 +82,31 @@ class Options {
 	public function set_options(): void {
 		$this->options = (array) get_option( self::OPT_NAME, [] );
 
-		foreach( $this->get_def_options() as $name => $val ){
-			if( ! isset( $this->options[ $name ] ) ){
-				// cast type
-				settype( $val, gettype( $this->default_options[ $name ] ) );
-				/**
-				 * @see self::$download_tpl
-				 * @see self::$download_tpl_styles
-				 * @see self::$links_class
-				 * @see self::$add_hits
-				 * @see self::$in_post
-				 * @see self::$hide_url
-				 * @see self::$widget
-				 * @see self::$toolbar_item
-				 * @see self::$access_roles
-				 * @see self::$url_exclude_patterns
-				 */
-				$this->options[ $name ] = $val;
-			}
+		foreach( $this->options as $key => $val ){
+			$this->options[ $key ] = $this->cast_type( $key, $val );
 		}
+
+		foreach( $this->get_def_options() as $key => $def_val ){
+			/**
+			 * @see self::$download_tpl
+			 * @see self::$download_tpl_styles
+			 * @see self::$links_class
+			 * @see self::$add_hits
+			 * @see self::$in_post
+			 * @see self::$hide_url
+			 * @see self::$widget
+			 * @see self::$toolbar_item
+			 * @see self::$access_roles
+			 * @see self::$url_exclude_patterns
+			 */
+			$this->options[ $key ] ??= $def_val;
+		}
+	}
+
+	private function cast_type( string $key, $val ) {
+		settype( $val, gettype( $this->default_options[ $key ] ) );
+
+		return $val;
 	}
 
 	public function get_raw_options(): array {
@@ -141,13 +147,18 @@ class Options {
 			elseif( $key === 'url_exclude_patterns' ){
 				// no sanitize... wp_kses($val, 'post');
 			}
-			// no sanitize...
-			elseif( is_array( $val ) ){
+			elseif( $key === 'access_roles' ){
 				$val = array_map( 'sanitize_key', $val );
+				$not_allowed_roles =  [ 'contributor', 'subscriber' ];
+				$val = array_filter( $val, static fn( $role ) => ! in_array( $role, $not_allowed_roles, true ) );
 			}
 			else{
-				$val = sanitize_key( $val );
+				$val = is_array( $val )
+					? array_map( 'sanitize_key', $val )
+					: sanitize_key( $val );
 			}
+
+			$val = $this->cast_type( $key, $val );
 		}
 		unset( $val );
 

@@ -9,6 +9,16 @@ class Download_Shortcode {
 
 	public function init(): void {
 		add_shortcode( 'download', [ $this, 'download_shortcode' ] );
+		add_action( 'wp_head', [ __CLASS__, 'add_custom_styles' ], 999 );
+	}
+
+	public static function add_custom_styles(): void {
+		global $post;
+		$styles = plugin()->opt->download_tpl_styles;
+		if( ! $styles || ! $post || ! has_shortcode( $post->post_content, 'download' ) ){
+			return;
+		}
+		echo sprintf( "\n".'<style id="kama-click-counter-shortcode">%s</style>', esc_html( $styles ) );
 	}
 
 	public function download_shortcode( $atts = [] ): string {
@@ -50,8 +60,8 @@ class Download_Shortcode {
 		}
 
 		$tpl = plugin()->opt->download_tpl;
-		$tpl = str_replace( '[link_url]', esc_url( $kcc_url ), $tpl );
 
+		$tpl = str_replace( '[link_url]', esc_url( $kcc_url ), $tpl );
 		$atts['title'] && ( $tpl = str_replace( '[link_title]',       esc_html( $atts['title'] ), $tpl ) );
 		$atts['desc']  && ( $tpl = str_replace( '[link_description]', esc_html( $atts['desc'] ), $tpl ) );
 
