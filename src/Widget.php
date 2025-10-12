@@ -105,11 +105,11 @@ class Widget extends WP_Widget {
 			$tpl = str_replace( '[link_url]', esc_url( $_url ), $tpl );
 
 			// change the rest
-			$lis[] = '<li>' . plugin()->download_shortcode->tpl_replace_shortcodes( $tpl, $link ) . '</li>' . "\n";
+			$lis[] = '<li class="kcc_widget__item">' . plugin()->download_shortcode->tpl_replace_shortcodes( $tpl, $link ) . '</li>' . "\n";
 		}
 
 		$wg_content = '
-		<style>' . strip_tags( $opts->template_css ) . '</style>
+		<style id="kcc-widget">' . esc_html( $opts->template_css ) . '</style>
 		<ul class="kcc_widget">' . implode( '', $lis ) . '</ul>
 		';
 
@@ -124,20 +124,20 @@ class Widget extends WP_Widget {
 	 * @return string|void Default return is 'noform'.
 	 */
 	public function form( $instance ) {
+		$default_template_css = <<<'CSS'
+			.kcc_widget{ display:flex; flex-direction:column; gap:1.3em; }
+			.kcc_widget li{ display:flex; align-items:center; gap:1em; list-style:none; margin:0; padding:0; }
+			.kcc_widget img{ align-self:flex-start; width:2rem; }
+			.kcc_widget p{ margin:0; margin-top:.5em; font-size:90%; opacity:.7; }
+			CSS;
 
-		$default_template_css = '
-			.kcc_widget{ padding:15px; }
-			.kcc_widget li{ margin-bottom:10px; list-style: none; }
-			.kcc_widget li:after{ content:""; display:table; clear:both; }
-			.kcc_widget img{ width:30px; float:left; margin:5px 10px 5px 0; }
-			.kcc_widget p{ margin-left:40px; }
-		';
-
-		$default_template = '
+		$default_template = <<<'HTML'
 			<img src="[icon_url]" alt="" />
-			<a href="[link_url]">[link_title]</a> ([link_clicks])
-			<p>[link_description]</p>
-		';
+			<div class="kcc_widget__item_info">
+				<a href="[link_url]">[link_title]</a> <small>([link_clicks])</small>
+				<p>[link_description]</p>
+			</div>
+			HTML;
 
 		$title          = $instance['title'] ?? __( 'Top Downloads', 'kama-clic-counter' );
 		$number         = $instance['number'] ?? 5;
@@ -206,14 +206,23 @@ class Widget extends WP_Widget {
 	/**
 	 * Saves the widget settings.
 	 * Here the data should be cleared and returned to be saved to the database.
+	 *
+	 * @param array $new_data  New settings for this instance as input by the user via WP_Widget::form().
+	 * @param array $old_data  Old settings for this instance.
 	 */
-	public function update( $new_instance, $old_instance ): array {
-		$inst = [];
-		$inst['title'] = $new_instance['title'] ? strip_tags( $new_instance['title'] ) : '';
-		$inst['number'] = $new_instance['number'] ? (int) $new_instance['number'] : 5;
-		$inst['last_date'] = preg_match( '~[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}~', $new_instance['last_date'] ) ? $new_instance['last_date'] : '';
+	public function update( $new_data, $old_data ): array {
+		$sanitized = [
+			'title'          => wp_kses_post( $new_data['title'] ?? '' ),
+			'number'         => (int) ( $new_data['number'] ?? 5 ),
+			'sort'           => sanitize_text_field( $new_data['sort'] ?? '' ),
+			'last_date'      => preg_match( '~\d{4}-\d{1,2}-\d{1,2}~', $new_data['last_date'] ) ? $new_data['last_date'] : '',
+			'only_downloads' => (int) ( $new_data['only_downloads'] ),
+			'use_post_url'   => (int) ( $new_data['use_post_url'] ),
+			'template'       => wp_kses_post( $new_data['template'] ?? '' ),
+			'template_css'   => sanitize_textarea_field( $new_data['template_css'] ?? '' ),
+		];
 
-		return array_merge( $inst, $new_instance );
+		return array_merge( $new_data, $sanitized );
 	}
 
 }
