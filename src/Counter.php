@@ -20,14 +20,14 @@ class Counter {
 	}
 
 	public function init(): void {
-		add_action( 'wp_footer', [ $this, 'footer_js' ], 99 );
-		add_action( 'init', [ $this, 'redirect' ], 0 );
+		add_action( 'wp_footer', [ $this, '_footer_js' ], 99 );
+		add_action( 'init', [ $this, '_redirect' ], 0 );
 	}
 
 	/**
 	 * A script to count links all over the site.
 	 */
-	public function footer_js(): void {
+	public function _footer_js(): void {
 		$js = file_get_contents( plugin()->dir . '/assets/counter.min.js' );
 
 		$js = strtr( $js, [
@@ -53,7 +53,6 @@ class Counter {
 	 * @return mixed|null
 	 */
 	public function get_kcc_url( string $url = '', $in_post = '', $download = '' ) {
-
 		// order matters...
 		$vars = [
 			'download'      => sanitize_text_field( $download ),
@@ -88,11 +87,10 @@ class Counter {
 	 *
 	 * @return string URL with a hidden link.
 	 */
-	public function hide_link_url( $kcc_url ): string {
-
+	private function hide_link_url( string $kcc_url ): string {
 		$parsed = $this->parse_kcc_url( $kcc_url );
 
-		// не прячем если это простая ссылка или урл уже спрятан
+		// do not hide if this is a simple link or the URL is already hidden
 		if( empty( $parsed['download'] ) || ( isset( $parsed[ self::COUNT_KEY ] ) && is_numeric( $parsed[ self::COUNT_KEY ] ) ) ){
 			return $kcc_url;
 		}
@@ -114,7 +112,6 @@ class Counter {
 	 * @return bool|int
 	 */
 	public function do_count( $kcc_url, $count = true ) {
-
 		$parsed = is_array( $kcc_url ) ? $kcc_url : $this->parse_kcc_url( $kcc_url );
 
 		$args = [
@@ -125,7 +122,7 @@ class Counter {
 			'count'     => $count,
 		];
 
-		$link_url = &$args['link_url'];
+		$link_url = & $args['link_url'];
 		$link_url = urldecode( $link_url ); // Mark Carson
 		$link_url = self::del_http_protocol( $link_url );
 
@@ -154,21 +151,25 @@ class Counter {
 
 		$updated = $this->update_existing_link( $args );
 		if( $updated ){
-			$return = true;
+			$result = true;
 		}
 		else{
 			[ $insert_id, $insert_data ] = $this->insert_new_link( $args );
-			$return = $insert_id;
+			$result = $insert_id;
 		}
 
 		/**
 		 * Allows to do something after count.
+		 *
+		 * @param array    $args        The arguments passed to the counting function: {@see Counter::update_existing_link()}.
+		 * @param bool|int $result      true/false if an existing link was updated, or the ID of the newly inserted link.
+		 * @param array    $insert_data Data of the newly inserted link, if a new link was added.
 		 */
-		do_action( 'kcc_count_after', $args, $updated, ( $insert_data ?? [] ) );
+		do_action( 'kcc_count_after', $args, $result, ( $insert_data ?? [] ) );
 
 		$this->clear_link_cache( $kcc_url );
 
-		return $return;
+		return $result;
 	}
 
 	private function update_existing_link( array $args ): bool {
@@ -212,10 +213,8 @@ class Counter {
 		global $wpdb;
 
 		$all_links = $wpdb->get_results( "SELECT * FROM $wpdb->kcc_clicks WHERE $WHERE ORDER BY link_clicks DESC LIMIT 99" );
-
 		if( count( $all_links ) > 1 ){
 			$first_link = array_shift( $all_links );
-
 			foreach( $all_links as $link ){
 				$add_clicks = (int) $link->link_clicks;
 				$wpdb->query( "UPDATE $wpdb->kcc_clicks SET link_clicks = (link_clicks + $add_clicks) WHERE link_id = $first_link->link_id;" );
@@ -253,7 +252,6 @@ class Counter {
 			$host = parse_url( $insert_data['link_url'], PHP_URL_HOST );
 
 			$idn = new \KamaClickCounter\libs\idna_convert();
-
 			$insert_data['link_name'] = str_replace( $host, $idn->decode( $host ), $insert_data['link_name'] );
 		}
 
@@ -298,7 +296,6 @@ class Counter {
 	}
 
 	private function is_url_in_exclude_list( $url ): bool {
-
 		if( ! $this->opt->url_exclude_patterns ){
 			return false;
 		}
@@ -324,7 +321,7 @@ class Counter {
 	/**
 	 * Redirect to link url.
 	 */
-	public function redirect(): void {
+	public function _redirect(): void {
 		/**
 		 * Allows to override counting function completely.
 		 *
@@ -348,9 +345,16 @@ class Counter {
 
 		/// count
 
-		// NOTE: To make it harder to add any links to the DB via a simple GET request,
-		// we check that the referer matches the current site. If not, the click isn't counted.
-		$is_do_count = str_contains( $_SERVER['HTTP_REFERER'] ?? '', parse_url( get_home_url(), PHP_URL_HOST ) );
+		/**
+		 * NOTE: To make it harder to add any links to the DB via a simple GET request,
+		 * we check that the referer matches the current site. If not, the click isn't counted.
+		 *
+		 * INFO: this code was commented because we can-not relly on referer because:
+		 * - browsers or plugins can block it
+		 * - rel="noopener noreferrer" in link can block it
+		 */
+		// $is_do_count = str_contains( $_SERVER['HTTP_REFERER'] ?? '', parse_url( get_home_url(), PHP_URL_HOST ) ); // should not be used
+		$is_do_count = true;
 
 		/**
 		 * Allows to change the count trigger logic.
@@ -597,7 +601,6 @@ class Counter {
 	 */
 	public function get_link( $kcc_url, $clear_cache = false ): ?Link_Item {
 		global $wpdb;
-
 		static $cache;
 
 		if( $clear_cache ){
