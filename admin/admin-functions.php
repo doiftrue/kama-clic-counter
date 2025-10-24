@@ -35,5 +35,8 @@ function get_clicks_per_day( $link ): float {
 		$cur_time = time() + ( get_option( 'gmt_offset' ) * 3600 );
 	}
 
-	return round( ( (int) $link->link_clicks / ( ( $cur_time - strtotime( $link->link_date ) ) / ( 3600 * 24 ) ) ), 1 );
+	$month_clicks = (int) $link->clicks_in_month;
+	$days_passed = date( 'j', $cur_time ) - 1;
+
+	return round( $month_clicks / ( $days_passed ?: 1 ), 1 );
 }

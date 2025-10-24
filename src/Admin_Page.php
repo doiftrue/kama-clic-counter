@@ -110,6 +110,9 @@ class Admin_Page {
 			elseif( $key === 'link_description' ){
 				$val = wp_kses_post( $val );
 			}
+			elseif( $key === 'clicks_history' ){
+				$val = sanitize_textarea_field( $val );
+			}
 			else{
 				$val = sanitize_text_field( $val );
 			}

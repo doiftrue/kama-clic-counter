@@ -10,6 +10,8 @@ global $wpdb;
 $_sortcols = [
 	'link_name',
 	'link_clicks',
+	'clicks_in_month',
+	'clicks_prev_month',
 	'in_post',
 	'attach_id',
 	'link_date',
@@ -91,10 +93,8 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 ?>
 
 
-<form name="kcc_stat" method="post" action="">
-
+<form name="kcc_stat" method="POST" action="">
 	<?php wp_nonce_field( 'bulk_action' ); ?>
-
 	<?php
 	function _kcc_head_text( $text, $col_name ) {
 		$_ord     = sanitize_text_field( $_GET['order'] ?? '' );
@@ -102,33 +102,32 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 		$order2   = ( $_ord === 'ASC' ) ? 'DESC' : 'ASC';
 		$ind      = ( $_ord === 'ASC' ) ? ' ▾' : ' ▴';
 
-		$out = sprintf( '<a href="%s" title="%s">%s %s</a>',
+		return sprintf( '<a href="%s" title="%s">%s %s</a>',
 			esc_url( add_query_arg( [ 'order_by' => $col_name, 'order' => $order2 ] ) ),
 			esc_attr__( 'Sort', 'kama-clic-counter' ),
 			esc_html( $text ),
 			( $order_by === $col_name ? $ind : '' )
 		);
-
-		return $out;
 	}
 	?>
 
 	<table class="widefat kcc">
 		<thead>
 		<tr>
-			<td class="check-column" style='width:30px;'><input type="checkbox" /></td>
+			<td class="check-column" style='width:30px;'><input type="checkbox"/></td>
 			<th style='width:30px;'><!--img --></th>
-			<th><?= _kcc_head_text( __('File', 'kama-clic-counter'), 'link_name')?></th>
-			<th><?= _kcc_head_text( __('Clicks', 'kama-clic-counter'), 'link_clicks')?></th>
-			<th><?php _e('Clicks/day', 'kama-clic-counter') ?></th>
-			<th><?php _e('Size', 'kama-clic-counter') ?></th>
+			<th><?= _kcc_head_text( __( 'File', 'kama-clic-counter' ), 'link_name' ) ?></th>
+			<th><?= _kcc_head_text( __( 'Month', 'kama-clic-counter' ), 'clicks_in_month' ) ?></th>
+			<th><?= _kcc_head_text( __( 'Prev Month', 'kama-clic-counter' ), 'clicks_prev_month' ) ?></th>
+			<th><?= _kcc_head_text( __( 'All', 'kama-clic-counter' ), 'link_clicks' ) ?></th>
+			<th><?= __( 'Size', 'kama-clic-counter' ) ?></th>
 			<?php if( plugin()->opt->in_post ){ ?>
-				<th><?= _kcc_head_text( __('Post', 'kama-clic-counter'), 'in_post')?></th>
+				<th><?= _kcc_head_text( __( 'Post', 'kama-clic-counter' ), 'in_post' ) ?></th>
 			<?php } ?>
-			<th><?= _kcc_head_text( __('Attach', 'kama-clic-counter'), 'attach_id')?></th>
-			<th style="width:80px;"><?= _kcc_head_text( __('Added', 'kama-clic-counter'), 'link_date')?></th>
-			<th style="width:80px;"><?= _kcc_head_text( __('Last click', 'kama-clic-counter'), 'last_click_date')?></th>
-			<th><?= _kcc_head_text( 'DW', 'downloads') ?></th>
+			<th><?= _kcc_head_text( __( 'Attach', 'kama-clic-counter' ), 'attach_id' ) ?></th>
+			<th style="width:80px;"><?= _kcc_head_text( __( 'Added', 'kama-clic-counter' ), 'link_date' ) ?></th>
+			<th style="width:80px;"><?= _kcc_head_text( __( 'Last Click', 'kama-clic-counter' ), 'last_click_date' ) ?></th>
+			<th><?= _kcc_head_text( 'DW', 'downloads' ) ?></th>
 		</tr>
 		</thead>
 
@@ -179,15 +178,19 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 					</div>
 				</td>
 
+				<td><?= $link->clicks_in_month ?><br><?= get_clicks_per_day( $link ) ?> <small>/<?= __( 'day', 'kama-clic-counter' ) ?></small></td>
+				<td><?= $link->clicks_prev_month ?></td>
 				<td><?= $link->link_clicks ?></td>
-				<td><?= get_clicks_per_day( $link ) ?></td>
-				<td><?= $link->file_size ?></td>
+				<td><?= esc_html( $link->file_size ) ?></td>
 				<?php if( plugin()->opt->in_post ){ ?>
-					<td><?= ($link->in_post && $in_post) ? '<a href="'. esc_url( $in_post_permalink ) .'" title="'. esc_attr( $in_post->post_title ) .'">'. $link->in_post .'</a>' : '' ?></td>
+					<td><?= ($link->in_post && $in_post)
+							? sprintf( '<a href="%s" title="%s">%s</a>', esc_url( $in_post_permalink ), esc_attr( $in_post->post_title ), $link->in_post )
+							: ''
+						?></td>
 				<?php } ?>
 				<td><?= $link->attach_id ? sprintf( '<a href="%s">%s</a>', admin_url( "post.php?post={$link->attach_id}&action=edit" ), $link->attach_id ) : '' ?></td>
-				<td><?= $link->link_date ?></td>
-				<td><?= $link->last_click_date ?></td>
+				<td><?= esc_html( $link->link_date ) ?></td>
+				<td><?= esc_html( $link->last_click_date ) ?></td>
 				<td><?= $link->downloads ? __( 'yes', 'kama-clic-counter' ) : '' ?></td>
 			</tr>
 		<?php } ?>

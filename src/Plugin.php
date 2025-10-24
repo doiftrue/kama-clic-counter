@@ -134,42 +134,48 @@ class Plugin {
 	}
 
 	public function activation(): void {
-		global $wpdb;
-
 		if( ! $this->check_dependencies() ){
 			return;
 		}
 
-		$charset_collate = ( ! empty( $wpdb->charset ) ) ? "DEFAULT CHARSET=$wpdb->charset" : '';
-		$charset_collate .= ( ! empty( $wpdb->collate ) ) ? " COLLATE $wpdb->collate" : '';
-
-		// Создаем таблицу если такой еще не существует
-		$sql = "CREATE TABLE $wpdb->kcc_clicks (
-			link_id           bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-			attach_id         bigint(20) UNSIGNED NOT NULL default 0,
-			in_post           bigint(20) UNSIGNED NOT NULL default 0,
-			link_clicks       bigint(20) UNSIGNED NOT NULL default 1,
-			link_name         varchar(191)        NOT NULL default '',
-			link_title        text                NOT NULL ,
-			link_description  text                NOT NULL ,
-			link_date         date                NOT NULL default '1970-01-01',
-			last_click_date   date                NOT NULL default '1970-01-01',
-			link_url          text                NOT NULL ,
-			file_size         varchar(100)        NOT NULL default '',
-			downloads         ENUM('','yes')      NOT NULL default '',
-			PRIMARY KEY  (link_id),
-			KEY in_post (in_post),
-			KEY downloads (downloads),
-			KEY link_url (link_url(191))
-		) $charset_collate";
-
-		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-
-		dbDelta( $sql );
+		self::update_db_table();
 
 		if( ! $this->opt->get_raw_options() ){
 			$this->opt->reset_to_defaults();
 		}
+	}
+
+	public static function update_db_table(): array {
+		global $wpdb;
+
+		// Create the table if it does not already exist
+		$sql = <<<SQL
+			CREATE TABLE $wpdb->kcc_clicks (
+				link_id           bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+				attach_id         bigint(20) UNSIGNED NOT NULL default 0,
+				in_post           bigint(20) UNSIGNED NOT NULL default 0,
+				link_clicks       bigint(20) UNSIGNED NOT NULL default 1 COMMENT 'All time clicks count',
+				clicks_in_month   bigint(20) UNSIGNED NOT NULL default 0 COMMENT 'Current month clicks count',
+				clicks_prev_month bigint(20) UNSIGNED NOT NULL default 0 COMMENT 'Previous month clicks count',
+				clicks_history    text                NOT NULL ,
+				link_name         varchar(191)        NOT NULL default '',
+				link_title        text                NOT NULL ,
+				link_description  text                NOT NULL ,
+				link_date         date                NOT NULL default '1970-01-01',
+				last_click_date   date                NOT NULL default '1970-01-01',
+				link_url          text                NOT NULL ,
+				file_size         varchar(100)        NOT NULL default '',
+				downloads         ENUM('','yes')      NOT NULL default '',
+				PRIMARY KEY  (link_id),
+				KEY in_post (in_post),
+				KEY downloads (downloads),
+				KEY link_url (link_url(191))
+			) {$wpdb->get_charset_collate()}
+			SQL;
+
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+
+		return dbDelta( $sql );
 	}
 
 }

@@ -47,7 +47,23 @@ if( ! $link ){
 	<img class="editlinkform__img" src="<?= esc_attr( Helpers::get_icon_url( $link->link_url ) ) ?>" alt="" />
 
 	<div class="editlinkform__row">
-		<input type="number" style="width:10rem;" name="up[link_clicks]" value='<?= esc_attr( $link->link_clicks ) ?>' /> <?php printf( __('Clicks. Per day: %s', 'kama-clic-counter'), ($var=get_clicks_per_day($link)) ? $var : 0 ) ?></div>
+		<input type="number" style="width:10rem;" name="up[link_clicks]" value="<?= esc_attr( $link->link_clicks ) ?>"/>
+		<?= __( 'All clicks count', 'kama-clic-counter' ) ?>
+	</div>
+	<div class="editlinkform__row">
+		<input type="number" style="width:10rem;" name="up[clicks_in_month]"
+		       value="<?= esc_attr( $link->clicks_in_month ) ?>"/>
+		<?= sprintf( __( 'Clicks in current month. Per day: %s', 'kama-clic-counter' ), get_clicks_per_day( $link ) ?: 0 ) ?>
+	</div>
+	<div class="editlinkform__row">
+		<input type="number" style="width:10rem;" name="up[clicks_prev_month]"
+		       value="<?= esc_attr( $link->clicks_prev_month ) ?>"/>
+		<?= __( 'Clicks per previous month', 'kama-clic-counter' ) ?>
+	</div>
+	<div class="editlinkform__row">
+		<textarea type="number" style="width:10rem;" name="up[clicks_history]"><?= esc_textarea( $link->clicks_history ) ?></textarea>
+		<?= __( 'Clicks history', 'kama-clic-counter' ) ?>
+	</div>
 	<div class="editlinkform__row">
 		<input type="text" style='width:10rem;' name="up[file_size]" value='<?= esc_attr( $link->file_size ) ?>' /> <?= esc_html__('File size', 'kama-clic-counter') ?>
 	</div>

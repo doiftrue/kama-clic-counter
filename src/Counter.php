@@ -196,7 +196,14 @@ class Counter {
 
 		// NOTE: $wpdb->prepare() can't be used, because of false will be returned if the link
 		// with encoded symbols is passed, for example, Cyrillic will have % symbol: /%d0%bf%d1%80%d0%b8%d0%b2%d0%b5%d1%82...
-		$update_sql = "UPDATE $wpdb->kcc_clicks SET link_clicks = (link_clicks + 1), last_click_date = '" . current_time( 'mysql' ) . "' WHERE $WHERE LIMIT 1";
+		$last_click_date = current_time( 'mysql' );
+		$update_sql = <<<SQL
+			UPDATE $wpdb->kcc_clicks
+			SET link_clicks     = (link_clicks + 1),
+			    clicks_in_month = (clicks_in_month + 1),
+			    last_click_date = '$last_click_date'
+			WHERE $WHERE LIMIT 1
+			SQL;
 
 		$this->check_and_delete_multiple_same_links( $WHERE );
 
@@ -232,13 +239,15 @@ class Counter {
 		$insert_data = [
 			'attach_id'        => 0,
 			'in_post'          => $args['in_post'],
-			// Для загрузок, когда запись добавляется просто при просмотре,
-			// все равно добавляется 1 первый просмотр, чтобы добавить запись в бД
+			// 0 - for downloads, when a record is added simply by viewing,
+			// 1 initial view is still added to insert the record into the DB
 			'link_clicks'      => $args['count'] ? 1 : 0,
+			'clicks_in_month'  => $args['count'] ? 1 : 0,
+			'clicks_history'   => '',
 			'link_name'        => untrailingslashit( $this->is_file( $link_url )
 				? basename( $link_url )
 				: preg_replace( '~^(https?:)?//|\?.*$~', '', $link_url ) ),
-			'link_title'       => '', // устанавливается отдлеьно ниже
+			'link_title'       => '', // set separately below
 			'link_description' => '',
 			'link_date'        => current_time( 'mysql' ),
 			'last_click_date'  => current_time( 'mysql' ),
@@ -255,7 +264,7 @@ class Counter {
 			$insert_data['link_name'] = str_replace( $host, $idn->decode( $host ), $insert_data['link_name'] );
 		}
 
-		$title = &$insert_data['link_title'];
+		$title = & $insert_data['link_title'];
 
 		// is_attach?
 		$_link_url_like = '%' . $wpdb->esc_like( $link_url ) . '%';
@@ -401,7 +410,6 @@ class Counter {
 	 * @return array Parsed URL data or empty array if URL is invalid.
 	 */
 	public function parse_kcc_url( string $kcc_url ): array {
-
 		preg_match( '/\?(.+)$/', $kcc_url, $m ); // get kcc url query args
 		$kcc_query = $m[1]; // parse_url( $kcc_url, PHP_URL_QUERY );
 
@@ -450,12 +458,15 @@ class Counter {
 	}
 
 	public static function del_http_protocol( $url ) {
-		return preg_replace( '/https?:/', '', $url );
+		return preg_replace( '~https?:~', '', $url );
 	}
 
+	/**
+	 * Determines if the URL is a file (has an extension) or a webpage.
+	 */
 	private function is_file( $url ) {
 		/**
-		 * Allows to repalce {@see Counter::is_file()} method.
+		 * Allows to rewrite {@see Counter::is_file()} method logic.
 		 *
 		 * @param bool|null $is_file If null - use default method, if true/false - return this value.
 		 */
@@ -464,14 +475,13 @@ class Counter {
 			return $return;
 		}
 
+		// if no ext - not a file
 		if( ! preg_match( '~\.([a-zA-Z0-9]{1,8})(?=$|\?.*)~', $url, $m ) ){
 			return false;
 		}
 
 		$f_ext = $m[1];
-
 		$not_supported_ext = [ 'html', 'htm', 'xhtml', 'xht', 'php' ];
-
 		if( in_array( $f_ext, $not_supported_ext, true ) ){
 			return false;
 		}
@@ -483,9 +493,8 @@ class Counter {
 	 * Retrieve the title of a (local or remote) webpage.
 	 */
 	private function get_html_title( string $url ): string {
-
 		// without protocol - //site.ru/foo
-		if( '//' === substr( $url, 0, 2 ) ){
+		if( str_starts_with( $url, '//' ) ){
 			$url = "http:$url";
 		}
 
@@ -535,7 +544,6 @@ class Counter {
 		}
 
 		$size = (int) $size;
-
 		if( ! $size ){
 			return '';
 		}
@@ -558,8 +566,7 @@ class Counter {
 	 * @return int The size of the file referenced by $url, or 0 if the size could not be determined.
 	 */
 	private static function curl_get_file_size( string $url ): int {
-
-		// $url не может быть без протокола http
+		// $url cannot be without the http protocol
 		if( preg_match( '~^//~', $url ) ){
 			$url = "http:$url";
 		}

@@ -11,7 +11,7 @@
  * Plugin URI: https://wp-kama.com/77
  *
  * Requires PHP: 7.4
- * Requires at least: 5.7
+ * Requires at least: 5.9
  *
  * Version: 4.0.4
  */
