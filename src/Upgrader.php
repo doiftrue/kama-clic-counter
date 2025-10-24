@@ -1,8 +1,4 @@
 <?php
-/**
- * To forse upgrade add '?kcc_force_upgrade' parameter to URL
- */
-
 namespace KamaClickCounter;
 
 class Upgrader {
@@ -14,40 +10,29 @@ class Upgrader {
 	private string $prev_ver;
 	private string $curr_ver;
 
-	private bool $is_force_upgrade;
-
 	/** @var object[] */
 	private array $db_fields = [];
 
-	public function __construct() {
-		$this->is_force_upgrade = isset( $_GET['kcc_force_upgrade'] );
-		$this->prev_ver = $this->is_force_upgrade ? '1.0' : get_option( self::OPTION_NAME, '1.0' );
+	public function __construct( string $start_from_ver = '' ) {
+		$this->prev_ver = $start_from_ver ?: get_option( self::OPTION_NAME, '1.0' );
 		$this->curr_ver = plugin()->ver;
 	}
 
-	public function init(): void {
-		if( $this->prev_ver === $this->curr_ver ){
-			return;
-		}
+	public function is_run_upgrade(): bool {
+		return $this->prev_ver !== $this->curr_ver;
+	}
 
-		update_option( self::OPTION_NAME, $this->curr_ver );
-
+	public function run_upgrade(): void {
 		$this->set_db_fields();
-		if( ! $this->db_fields ){
-			return;
-		}
 
-		$res = $this->run_upgrade();
+		$res = $this->run_methods();
 		/** @noinspection ForgottenDebugOutputInspection */
 		error_log( 'Kama-Click-Counter upgrade result log: ' . print_r( $res, true ) ); // TODO: add better logging
 
-		if( $this->is_force_upgrade ){
-			wp_redirect( remove_query_arg( 'kcc_force_upgrade' ) );
-			exit;
-		}
+		update_option( self::OPTION_NAME, $this->curr_ver ); // update to current version
 	}
 
-	private function run_upgrade(): array {
+	private function run_methods(): array {
 		$res = [];
 		$this->v3_6_2( $res );
 		$this->v4_1_0( $res );

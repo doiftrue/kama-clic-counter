@@ -19,21 +19,34 @@ class Admin {
 
 		$this->admin_page->init();
 
-		add_action( 'delete_attachment', [ $this, 'delete_link_by_attach_id' ] );
-		add_action( 'edit_attachment', [ $this, 'update_link_with_attach' ] );
-		add_filter( 'plugin_action_links_' . plugin()->basename, [ $this, 'plugins_page_links' ] );
-		add_action( 'current_screen', [ $this, 'upgrade' ] );
+		add_action( 'delete_attachment', [ $this, '_delete_link_by_attach_id' ] );
+		add_action( 'edit_attachment', [ $this, '_update_link_with_attach' ] );
+		add_filter( 'plugin_action_links_' . plugin()->basename, [ $this, '_plugins_page_links' ] );
+		add_action( 'wp_loaded', [ $this, '_upgrade' ] );
 	}
 
-	public function upgrade(): void {
-		( new Upgrader() )->init();
+	/**
+	 * To forse upgrade add '&kcc_force_upgrade' parameter to URL
+	 */
+	public function _upgrade(): void {
+		$start_from_ver = isset( $_GET['kcc_force_upgrade'] ) ? '1.0' : '';
+
+		$upgrader = new Upgrader( $start_from_ver );
+		if( $upgrader->is_run_upgrade() ){
+			$upgrader->run_upgrade();
+
+			if( $start_from_ver ){
+				wp_redirect( remove_query_arg( 'kcc_force_upgrade' ) );
+				exit;
+			}
+		}
 	}
 
 	/**
 	 * Adds links to the statistics and settings pages from the plugins page.
 	 * For WP hook.
 	 */
-	public function plugins_page_links( $actions ) {
+	public function _plugins_page_links( $actions ) {
 		$actions[] = sprintf( '<a href="%s">%s</a>', plugin()->admin->admin_page_url( 'settings' ), __( 'Settings', 'kama-clic-counter' ) );
 		$actions[] = sprintf( '<a href="%s">%s</a>', plugin()->admin->admin_page_url(), __( 'Statistics', 'kama-clic-counter' ) );
 
@@ -56,7 +69,7 @@ class Admin {
 		return add_query_arg( [ 'delete_link' => $link_id, '_wpnonce' => wp_create_nonce( 'delete_link' ) ] );
 	}
 
-	public function delete_link_by_attach_id( $attach_id ) {
+	public function _delete_link_by_attach_id( $attach_id ) {
 		global $wpdb;
 		if( ! $attach_id ){
 			return false;
@@ -68,7 +81,7 @@ class Admin {
 	/**
 	 * Update the link if the attachment is updated.
 	 */
-	public function update_link_with_attach( $attach_id ) {
+	public function _update_link_with_attach( $attach_id ) {
 		global $wpdb;
 
 		$attdata = get_post( $attach_id );
