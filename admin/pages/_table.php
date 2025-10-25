@@ -25,7 +25,7 @@ $order        = ( strtoupper( $order ) === 'ASC' ) ? 'ASC' : 'DESC';
 $paged        = max( 1, (int) ( $_GET['paged'] ?? 1 ) );
 $limit        = 20;
 $offset       = ( $paged - 1 ) * $limit;
-$search_query = $_GET['kcc_search'] ?? '';
+$search_query = wp_unslash( $_GET['kcc_search'] ?? '' );
 
 $_LIMIT    = 'LIMIT ' . $wpdb->prepare( "%d, %d", $offset, $limit ); // to insure
 $_ORDER_BY = 'ORDER BY ' . sprintf( '%s %s', sanitize_key( $order_by ), sanitize_key( $order ) ); // to insure
@@ -40,7 +40,6 @@ if( $search_query ){
 		}
 	}
 
-	$search_query = wp_unslash( $search_query );
 	$s = '%' . $wpdb->esc_like( $search_query ) . '%';
 	$sql = $wpdb->prepare( "SELECT * FROM $wpdb->kcc_clicks WHERE link_url LIKE %s  OR link_name LIKE %s $_ORDER_BY $_LIMIT", $s, $s );
 }
@@ -111,15 +110,16 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 	}
 	?>
 
-	<table class="widefat kcc">
+	<table class="widefat kcc-table">
 		<thead>
 		<tr>
 			<td class="check-column" style='width:30px;'><input type="checkbox"/></td>
 			<th style='width:30px;'><!--img --></th>
 			<th><?= _kcc_head_text( __( 'File', 'kama-clic-counter' ), 'link_name' ) ?></th>
 			<th><?= _kcc_head_text( __( 'Month', 'kama-clic-counter' ), 'clicks_in_month' ) ?></th>
-			<th><?= _kcc_head_text( __( 'Prev Month', 'kama-clic-counter' ), 'clicks_prev_month' ) ?></th>
+			<th><?= _kcc_head_text( __( 'Prev M', 'kama-clic-counter' ), 'clicks_prev_month' ) ?></th>
 			<th><?= _kcc_head_text( __( 'All', 'kama-clic-counter' ), 'link_clicks' ) ?></th>
+			<th><?= __( 'History', 'kama-clic-counter' ) ?></th>
 			<th><?= __( 'Size', 'kama-clic-counter' ) ?></th>
 			<?php if( plugin()->opt->in_post ){ ?>
 				<th><?= _kcc_head_text( __( 'Post', 'kama-clic-counter' ), 'in_post' ) ?></th>
@@ -131,9 +131,8 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 		</tr>
 		</thead>
 
-		<tbody id="the-list">
+		<tbody class="kcc-table__tbody">
 		<?php
-
 		$i = 0;
 		foreach( $links as $link ){
 			$alt = ( ++$i % 2 ) ? 'class="alternate"' : '';
@@ -179,8 +178,17 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 				</td>
 
 				<td><?= $link->clicks_in_month ?><br><?= get_clicks_per_day( $link ) ?> <small>/<?= __( 'day', 'kama-clic-counter' ) ?></small></td>
+
 				<td><?= $link->clicks_prev_month ?></td>
+
 				<td><?= $link->link_clicks ?></td>
+
+				<td class="kcc-table__td-history">
+					<div class="kcc-table__td-history-inner">
+						<?= str_replace( "\n", '<br>', esc_html( $link->clicks_history ) ) ?>
+					</div>
+				</td>
+
 				<td><?= esc_html( $link->file_size ) ?></td>
 				<?php if( plugin()->opt->in_post ){ ?>
 					<td><?= ($link->in_post && $in_post)
@@ -188,15 +196,19 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 							: ''
 						?></td>
 				<?php } ?>
+
 				<td><?= $link->attach_id ? sprintf( '<a href="%s">%s</a>', admin_url( "post.php?post={$link->attach_id}&action=edit" ), $link->attach_id ) : '' ?></td>
+
 				<td><?= esc_html( $link->link_date ) ?></td>
+
 				<td><?= esc_html( $link->last_click_date ) ?></td>
+
 				<td><?= $link->downloads ? __( 'yes', 'kama-clic-counter' ) : '' ?></td>
 			</tr>
 		<?php } ?>
 		</tbody>
 	</table>
 
-	<p style="margin-top:7px;"><input type='submit' class='button' value='<?php _e('DELETE selected links', 'kama-clic-counter') ?>' /></p>
+	<p style="margin-top:1rem;"><input type='submit' class='button' value='<?php _e('DELETE selected links', 'kama-clic-counter') ?>' /></p>
 
 </form>

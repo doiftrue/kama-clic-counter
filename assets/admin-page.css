@@ -13,3 +13,12 @@
 .kcc_search_input:focus{ width:750px; }
 
 .button.kcc-alert-button{ border-color: tomato; color: tomato; }
+
+.kcc-table{  }
+.kcc-table__td-history-inner{ font-size:90%; opacity:.7; white-space:nowrap; max-height:2.5rem; overflow:auto; line-height: 1.1; padding-right:1em;
+	scrollbar-width: none; /* Firefox */ -ms-overflow-style: none; /* IE/old Edge */
+
+}
+.kcc-table__td-history-inner::-webkit-scrollbar {
+	display: none; /* Chrome/Safari/Opera */
+}

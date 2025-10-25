@@ -48,20 +48,20 @@ if( ! $link ){
 
 	<div class="editlinkform__row">
 		<input type="number" style="width:10rem;" name="up[link_clicks]" value="<?= esc_attr( $link->link_clicks ) ?>"/>
-		<?= __( 'All clicks count', 'kama-clic-counter' ) ?>
+		<?= __( 'All clicks', 'kama-clic-counter' ) ?>
 	</div>
 	<div class="editlinkform__row">
 		<input type="number" style="width:10rem;" name="up[clicks_in_month]"
 		       value="<?= esc_attr( $link->clicks_in_month ) ?>"/>
-		<?= sprintf( __( 'Clicks in current month. Per day: %s', 'kama-clic-counter' ), get_clicks_per_day( $link ) ?: 0 ) ?>
+		<?= sprintf( __( 'Current month clicks — %s per day', 'kama-clic-counter' ), get_clicks_per_day( $link ) ?: 0 ) ?>
 	</div>
 	<div class="editlinkform__row">
 		<input type="number" style="width:10rem;" name="up[clicks_prev_month]"
 		       value="<?= esc_attr( $link->clicks_prev_month ) ?>"/>
-		<?= __( 'Clicks per previous month', 'kama-clic-counter' ) ?>
+		<?= __( 'Previous month clicks', 'kama-clic-counter' ) ?>
 	</div>
 	<div class="editlinkform__row">
-		<textarea type="number" style="width:10rem;" name="up[clicks_history]"><?= esc_textarea( $link->clicks_history ) ?></textarea>
+		<textarea type="number" style="width:10rem;" name="up[clicks_history]" disabled><?= esc_textarea( $link->clicks_history ) ?></textarea>
 		<?= __( 'Clicks history', 'kama-clic-counter' ) ?>
 	</div>
 	<div class="editlinkform__row">

@@ -16,7 +16,7 @@ namespace KamaClickCounter;
  */
 class Options {
 
-	public const OPT_NAME = 'kcc_options';
+	public const OPTION_NAME = 'kcc_options';
 
 	private array $options;
 
@@ -80,7 +80,7 @@ class Options {
 	}
 
 	public function set_options(): void {
-		$this->options = (array) get_option( self::OPT_NAME, [] );
+		$this->options = (array) get_option( self::OPTION_NAME, [] );
 
 		foreach( $this->options as $key => $val ){
 			$this->options[ $key ] = $this->cast_type( $key, $val );
@@ -110,13 +110,13 @@ class Options {
 	}
 
 	public function get_raw_options(): array {
-		return (array) get_option( self::OPT_NAME, [] );
+		return (array) get_option( self::OPTION_NAME, [] );
 	}
 
 	public function reset_to_defaults(): bool {
 		$this->options = $this->get_def_options();
 
-		return (bool) update_option( self::OPT_NAME, $this->options );
+		return (bool) update_option( self::OPTION_NAME, $this->options );
 	}
 
 	public function get_def_options(): array {
@@ -128,7 +128,7 @@ class Options {
 
 	public function update_option( array $new_options ): bool {
 		$new_options = $this->sanitize( $new_options );
-		$up = update_option( self::OPT_NAME, $new_options );
+		$up = update_option( self::OPTION_NAME, $new_options );
 		$up && $this->set_options();
 
 		return (bool) $up;
