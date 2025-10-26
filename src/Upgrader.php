@@ -26,7 +26,9 @@ class Upgrader {
 		update_option( self::OPTION_NAME, $this->curr_ver );
 	}
 
-	// TODO: wrtie unit tests
+	/**
+	 * @see Upgrader__Test::test__run_methods()
+	 */
 	private function run_methods( Upgrader_Methods_Abstract $methods_container ): array {
 		$result = [];
 

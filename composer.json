@@ -1,0 +1,23 @@
+{
+  "name": "doiftrue/kama-click-counter",
+  "description": "WordPress plugin to count clicks on any link.",
+  "type": "wordpress-plugin",
+  "homepage": "https://wordpress.org/plugins/kama-clic-counter/",
+  "license": "GPL-2.0-or-later",
+  "scripts": {
+    "phpunit": "./vendor/bin/phpunit",
+    "phpunit_xdebug": "XDEBUG_TRIGGER=1 ./vendor/bin/phpunit"
+  },
+  "authors": [
+    {
+      "name": "Kama",
+      "email": "tnkamaev@gmail.com",
+      "homepage": "https://wp-kama.com"
+    }
+  ],
+  "autoload": {},
+  "require": {},
+  "require-dev": {
+    "10up/wp_mock": "*"
+  }
+}
