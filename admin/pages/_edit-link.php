@@ -10,14 +10,13 @@ defined( 'ABSPATH' ) || exit;
 global $wpdb;
 
 $link = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->kcc_clicks WHERE link_id = %d", $edit_link_id ) );
-
 if( ! $link ){
 	echo '<br><br>';
 	echo __( 'Link not found...', 'kama-clic-counter' );
-
 	return;
 }
 
+$link = new Link_Item( $link );
 ?>
 <style>
 	.editlink__goback{ padding:1.5rem 0; }
@@ -53,12 +52,12 @@ if( ! $link ){
 	<div class="editlinkform__row">
 		<input type="number" style="width:10rem;" name="up[clicks_in_month]"
 		       value="<?= esc_attr( $link->clicks_in_month ) ?>"/>
-		<?= sprintf( __( 'Current month clicks — %s per day', 'kama-clic-counter' ), get_clicks_per_day( $link ) ?: 0 ) ?>
+		<?= sprintf( __( 'Current Month clicks — %s per day', 'kama-clic-counter' ), calc_clicks_per_day( $link ) ?: 0 ) ?>
 	</div>
 	<div class="editlinkform__row">
 		<input type="number" style="width:10rem;" name="up[clicks_prev_month]"
 		       value="<?= esc_attr( $link->clicks_prev_month ) ?>"/>
-		<?= __( 'Previous month clicks', 'kama-clic-counter' ) ?>
+		<?= __( 'Previous Month clicks', 'kama-clic-counter' ) ?>
 	</div>
 	<div class="editlinkform__row">
 		<textarea type="number" style="width:10rem;" name="up[clicks_history]" disabled><?= esc_textarea( $link->clicks_history ) ?></textarea>

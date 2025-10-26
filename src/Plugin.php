@@ -28,6 +28,7 @@ class Plugin {
 	public Admin $admin;
 	public Counter $counter;
 	public Download_Shortcode $download_shortcode;
+	public Month_Clicks_Updater $month_updater;
 
 	public function __construct( string $main_file_path ) {
 		$this->set_wpdb_tables();
@@ -77,7 +78,10 @@ class Plugin {
 		$this->download_shortcode = new Download_Shortcode();
 		$this->download_shortcode->init();
 
-		$content_replacer = new Content_Replacer();
+		$this->month_updater = new Month_Clicks_Updater();
+		$this->month_updater->init();
+
+		$content_replacer = new Content_Replacer( $this->opt );
 		$content_replacer->init();
 	}
 
@@ -169,7 +173,8 @@ class Plugin {
 				PRIMARY KEY  (link_id),
 				KEY in_post (in_post),
 				KEY downloads (downloads),
-				KEY link_url (link_url(191))
+				KEY link_url (link_url(191)),
+				KEY clicks_in_month (clicks_in_month)
 			) {$wpdb->get_charset_collate()}
 			SQL;
 

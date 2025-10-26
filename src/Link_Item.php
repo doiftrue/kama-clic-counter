@@ -10,11 +10,11 @@ class Link_Item {
 	public int    $link_clicks;         /* readonly */
 	public int    $clicks_in_month;     /* readonly */
 	public int    $clicks_prev_month;   /* readonly */
-	public string $clicks_history;      /* readonly */
-	public string $link_name;           /* readonly */
-	public string $link_title;          /* readonly */
+	public string $clicks_history;      /* readonly */ // 2025-09 = 10\n2025-10 = 54\n
+	public string $link_name;           /* readonly */ // exmaple.com
+	public string $link_title;          /* readonly */ // Page name
 	public string $link_description;    /* readonly */
-	public string $link_date;           /* readonly */
+	public string $link_date;           /* readonly */ // 2025-10-25
 	public string $last_click_date;     /* readonly */
 	public string $link_url;            /* readonly */
 	public string $file_size;           /* readonly */

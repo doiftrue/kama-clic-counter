@@ -126,9 +126,8 @@ class Counter {
 		$link_url = urldecode( $link_url ); // Mark Carson
 		$link_url = self::del_http_protocol( $link_url );
 
-		// do not count when the link of the current page is specified so as not to catch looping
-		//if( false !== strpos( $link_url, $_SERVER['REQUEST_URI']) )
-		//	return;
+		// Do not count when the link of the current page is specified to avoid looping
+		//if( false !== strpos( $link_url, $_SERVER['REQUEST_URI'] ) ){ return; }
 
 		// checks
 
@@ -177,56 +176,97 @@ class Counter {
 
 		$link_url = $args['link_url'];
 
-		$WHERE = [];
+		$sql_WHERE = [];
 		if( is_numeric( $link_url ) ){
-			$WHERE[] = $wpdb->prepare( 'link_id = %d ', $link_url );
+			$sql_WHERE[] = $wpdb->prepare( 'link_id = %d ', $link_url );
 		}
 		else{
-			$WHERE[] = $wpdb->prepare( 'link_url = %s ', $link_url );
+			$sql_WHERE[] = $wpdb->prepare( 'link_url = %s ', $link_url );
 
 			if( $this->opt->in_post ){
-				$WHERE[] = $wpdb->prepare( 'in_post = %d', $args['in_post'] );
+				$sql_WHERE[] = $wpdb->prepare( 'in_post = %d', $args['in_post'] );
 			}
 			if( $args['downloads'] ){
-				$WHERE[] = $wpdb->prepare( 'downloads = %s', $args['downloads'] );
+				$sql_WHERE[] = $wpdb->prepare( 'downloads = %s', $args['downloads'] );
 			}
 		}
 
-		$WHERE = implode( ' AND ', $WHERE );
+		$sql_WHERE = implode( ' AND ', $sql_WHERE );
 
-		// NOTE: $wpdb->prepare() can't be used, because of false will be returned if the link
-		// with encoded symbols is passed, for example, Cyrillic will have % symbol: /%d0%bf%d1%80%d0%b8%d0%b2%d0%b5%d1%82...
+		// NOTE: We CANNOT use $wpdb->prepare(), because false will be returned if the link
+		//       contains encoded symbols. For example, Cyrillic will have % symbols: /%d0%bf%d1%80%d0...
 		$last_click_date = current_time( 'mysql' );
 		$update_sql = <<<SQL
 			UPDATE $wpdb->kcc_clicks
 			SET link_clicks     = (link_clicks + 1),
 			    clicks_in_month = (clicks_in_month + 1),
 			    last_click_date = '$last_click_date'
-			WHERE $WHERE LIMIT 1
+			WHERE $sql_WHERE LIMIT 1
 			SQL;
 
-		$this->check_and_delete_multiple_same_links( $WHERE );
+		[ $base_link, $duplicates ] = $this->get_base_link( $sql_WHERE );
 
-		do_action_ref_array( 'kcc_count_before', [ $args, & $update_sql ] );
+		$duplicates && $this->merge_duplicate_links( $base_link, $duplicates );
 
-		return (bool) $wpdb->query( $update_sql );
+		if( $base_link && plugin()->month_updater->need_update_single_link( $base_link ) ){
+			plugin()->month_updater->update_single_link( $base_link );
+		}
+
+		/**
+		 * Allows to do something before counting the link clicks.
+		 *
+		 * @param array          $args       Main counting arguments: link_url, in_post, downloads, kcc_url, count.
+		 * @param string         $update_sql SQL query that will be executed to update the link clicks.
+		 * @param string         $sql_WHERE  WHERE clause used in the SQL query.
+		 * @param Link_Item|null $base_link  Link item that will be counted. `null` if not found.
+		 */
+		do_action_ref_array( 'kcc_count_before', [ $args, & $update_sql, $sql_WHERE, $base_link ] );
+
+		$updated = (bool) $wpdb->query( $update_sql );
+
+		do_action_ref_array( 'kcc_count_after', [ $args, $sql_WHERE, $base_link ] );
+
+		return $updated;
+	}
+
+	/**
+	 * @return array{0:Link_Item|null, 1:array} Base link and array of duplicate links.
+	 */
+	private function get_base_link( string $WHERE ): array {
+		global $wpdb;
+
+		$all_links = $wpdb->get_results( "SELECT * FROM $wpdb->kcc_clicks WHERE $WHERE ORDER BY link_clicks DESC LIMIT 99" );
+		$all_links = array_filter( (array) $all_links );
+
+		$base_link = array_shift( $all_links ); // first
+		$duplicates = & $all_links;
+		if( ! $base_link ){
+			return [ null, [] ];
+		}
+
+		$base_link = new Link_Item( $base_link );
+
+		return [ $base_link, $duplicates ];
 	}
 
 	/**
 	 * For some reason (possibly due to race condition) additional identical links sometimes appear in the database.
 	 * This method tries to find such links and removes them.
 	 */
-	private function check_and_delete_multiple_same_links( $WHERE ): void {
+	private function merge_duplicate_links( Link_Item $base_link, array $other_links ): void {
 		global $wpdb;
+		foreach( $other_links as $link ){
+			/** @var Link_Item $link */
+			$add_clicks   = (int) $link->link_clicks;
+			$add_in_month = (int) $link->clicks_in_month;
 
-		$all_links = $wpdb->get_results( "SELECT * FROM $wpdb->kcc_clicks WHERE $WHERE ORDER BY link_clicks DESC LIMIT 99" );
-		if( count( $all_links ) > 1 ){
-			$first_link = array_shift( $all_links );
-			foreach( $all_links as $link ){
-				$add_clicks = (int) $link->link_clicks;
-				$wpdb->query( "UPDATE $wpdb->kcc_clicks SET link_clicks = (link_clicks + $add_clicks) WHERE link_id = $first_link->link_id;" );
-				$wpdb->query( "DELETE FROM $wpdb->kcc_clicks WHERE link_id = $link->link_id;" );
-			}
+			$wpdb->query( "UPDATE $wpdb->kcc_clicks
+				SET link_clicks     = (link_clicks + $add_clicks),
+				    clicks_in_month = (clicks_in_month + $add_in_month)
+				WHERE link_id = $base_link->link_id;"
+			);
+
+			$wpdb->query( "DELETE FROM $wpdb->kcc_clicks WHERE link_id = $link->link_id;" );
 		}
 	}
 

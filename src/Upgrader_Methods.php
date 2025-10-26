@@ -1,10 +1,14 @@
 <?php
+/**
+ * In this class you need create methods with names like vx_y_x(), that indicates
+ * the version for which this method will be executed during the upgrade process.
+ */
 
 namespace KamaClickCounter;
 
-trait Upgrader_Run_Methods {
+class Upgrader_Methods extends Upgrader_Methods_Abstract {
 
-	protected function v4_1_0( array & $res ): void { // @phpstan-ignore-line
+	public function v4_1_0( array & $res ): void {
 		$raw_opt = plugin()->opt->get_raw_options();
 
 		// Move inline styles from template to "download_tpl_styles" option.
@@ -28,17 +32,15 @@ trait Upgrader_Run_Methods {
 			$up = $wpdb->query( "ALTER TABLE $wpdb->kcc_clicks
 				ADD COLUMN clicks_in_month   bigint(20) UNSIGNED NOT NULL default 0 COMMENT 'Current month clicks count' AFTER link_clicks,
 				ADD COLUMN clicks_prev_month bigint(20) UNSIGNED NOT NULL default 0 COMMENT 'Previous month clicks count' AFTER clicks_in_month,
-				ADD COLUMN clicks_history    text                NOT NULL AFTER clicks_prev_month"
+				ADD COLUMN clicks_history    text                NOT NULL AFTER clicks_prev_month,
+				ADD KEY clicks_in_month (clicks_in_month)"
 			);
 			$up && $res['db_columns'] = 'New columns added to db table';
 		}
 	}
 
-	protected function v3_6_2( array & $res ): void { // @phpstan-ignore-line
+	public function v3_6_2( array & $res ): void {
 		global $wpdb;
-		if( ! version_compare( $this->prev_ver, '3.6.8.2', '<' ) ){
-			return;
-		}
 
 		$wpdb->query( "UPDATE $wpdb->kcc_clicks SET link_url = REPLACE(link_url, 'http://', '//')" );
 		$wpdb->query( "UPDATE $wpdb->kcc_clicks SET link_url = REPLACE(link_url, 'https://', '//')" );

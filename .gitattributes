@@ -1,0 +1,21 @@
+/.git/                 export-ignore
+/.github/              export-ignore
+/tmp/                  export-ignore
+/tests/                export-ignore
+/vendor/               export-ignore
+/node_modules/         export-ignore
+/Makefile              export-ignore
+*/make-pot.sh          export-ignore
+/composer.json         export-ignore
+/composer.lock         export-ignore
+/phpunit.xml           export-ignore
+/.gitattributes        export-ignore
+/.distignore           export-ignore
+/.editorconfig         export-ignore
+/.gitignore            export-ignore
+/TODO.md               export-ignore
+
+*       text eol=lf
+*.png   binary
+*.webp  binary
+*.avif  binary

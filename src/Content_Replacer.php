@@ -4,11 +4,14 @@ namespace KamaClickCounter;
 
 class Content_Replacer {
 
-	public function __construct() {
+	private Options $opt;
+
+	public function __construct( Options $opt ) {
+		$this->opt = $opt;
 	}
 
 	public function init(): void {
-		if( plugin()->opt->links_class ){
+		if( $this->opt->links_class ){
 			add_filter( 'the_content', [ $this, 'modify_links' ] );
 		}
 	}
@@ -17,13 +20,13 @@ class Content_Replacer {
 	 * Change links that have special class in given content.
 	 */
 	public function modify_links( string $content ): string {
-		$the_class = plugin()->opt->links_class;
+		$the_class = $this->opt->links_class;
 		if( false === strpos( $content, $the_class ) ){
 			return $content;
 		}
 
 		return preg_replace_callback( "@<a ([^>]*class=['\"][^>]*{$the_class}(?=[\s'\"])[^>]*)>(.+?)</a>@",
-			[ $this, '_make_html_link_cb', ],
+			[ $this, '_make_html_link_cb' ],
 			$content
 		);
 	}
@@ -41,7 +44,7 @@ class Content_Replacer {
 
 		// add hits info after link or in title
 		$after = '';
-		if( plugin()->opt->add_hits ){
+		if( $this->opt->add_hits ){
 			preg_match_all( '~[^=]+=([\'"])[^\1]+?\1~', $link_attrs, $args );
 
 			foreach( $args[0] as $pair ){
@@ -53,7 +56,7 @@ class Content_Replacer {
 
 			$link = plugin()->counter->get_link( $args['href'] );
 			if( $link && $link->link_clicks ){
-				switch( plugin()->opt->add_hits ){
+				switch( $this->opt->add_hits ){
 					case 'in_title':
 						$args['title'] = esc_attr( sprintf( "(%s $link->link_clicks)%s", __( 'clicks:', 'kama-clic-counter' ), ($args['title'] ?? '') ) );
 						break;

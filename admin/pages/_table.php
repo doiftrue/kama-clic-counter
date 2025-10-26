@@ -135,6 +135,7 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 		<?php
 		$i = 0;
 		foreach( $links as $link ){
+			/** @var Link_Item $link */
 			$alt = ( ++$i % 2 ) ? 'class="alternate"' : '';
 
 			$is_link_in_post   = ( plugin()->opt->in_post && $link->in_post );
@@ -177,7 +178,7 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 					</div>
 				</td>
 
-				<td><?= $link->clicks_in_month ?><br><?= get_clicks_per_day( $link ) ?> <small>/<?= __( 'day', 'kama-clic-counter' ) ?></small></td>
+				<td><?= $link->clicks_in_month ?><br><?= calc_clicks_per_day( $link ) ?> <small>/<?= __( 'day', 'kama-clic-counter' ) ?></small></td>
 
 				<td><?= $link->clicks_prev_month ?></td>
 
@@ -192,14 +193,14 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 				<td><?= esc_html( $link->file_size ) ?></td>
 				<?php if( plugin()->opt->in_post ){ ?>
 					<td><?= ($link->in_post && $in_post)
-							? sprintf( '<a href="%s" title="%s">%s</a>', esc_url( $in_post_permalink ), esc_attr( $in_post->post_title ), $link->in_post )
+							? sprintf( '<a href="%s" title="%s" target="_blank">%s</a>', esc_url( $in_post_permalink ), esc_attr( $in_post->post_title ), $link->in_post )
 							: ''
 						?></td>
 				<?php } ?>
 
 				<td><?= $link->attach_id ? sprintf( '<a href="%s">%s</a>', admin_url( "post.php?post={$link->attach_id}&action=edit" ), $link->attach_id ) : '' ?></td>
 
-				<td><?= esc_html( $link->link_date ) ?></td>
+				<td class="kcc-table__td-added"><?= esc_html( $link->link_date ) ?></td>
 
 				<td><?= esc_html( $link->last_click_date ) ?></td>
 

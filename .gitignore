@@ -1,1 +1,6 @@
-.idea
+/.idea
+/.svn
+/__*
+
+/vendor/
+/tests/cache/
