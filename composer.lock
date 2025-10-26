@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2d3db3d6d00e42332300ee6671ca6569",
+    "content-hash": "51514a77e4d85af08ef2239a99a03ef0",
     "packages": [],
     "packages-dev": [
         {
@@ -178,6 +178,43 @@
                 }
             ],
             "time": "2022-12-30T00:23:10+00:00"
+        },
+        {
+            "name": "doiftrue/unitest-wp-copy",
+            "version": "0.15",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/doiftrue/unitest-wp-copy.git",
+                "reference": "3cf5f76c6dd9edb36fa2219f9bcdb6b4ae1b3d75"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/doiftrue/unitest-wp-copy/zipball/3cf5f76c6dd9edb36fa2219f9bcdb6b4ae1b3d75",
+                "reference": "3cf5f76c6dd9edb36fa2219f9bcdb6b4ae1b3d75",
+                "shasum": ""
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9",
+                "wordpress/wordpress": "*"
+            },
+            "type": "library",
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Timur Kamaev",
+                    "email": "tnkamaev@gmail.com",
+                    "homepage": "https://github.com/doiftrue/unitest-wp-copy"
+                }
+            ],
+            "description": "Collection of WordPress core functions and classes that can be used in unit tests to simulate WordPress environment.",
+            "support": {
+                "issues": "https://github.com/doiftrue/unitest-wp-copy/issues",
+                "source": "https://github.com/doiftrue/unitest-wp-copy/tree/0.15"
+            },
+            "time": "2025-10-26T00:47:29+00:00"
         },
         {
             "name": "hamcrest/hamcrest-php",

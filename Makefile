@@ -10,6 +10,10 @@ phpunit:
 phpunit_xdebug:
 	$(call php_run, cd public_html/wp-content/plugins/kama-clic-counter; composer run phpunit_xdebug)
 
+composer_install:
+	$(call php_run, cd public_html/wp-content/plugins/kama-clic-counter; composer install)
+composer_update:
+	$(call php_run, cd public_html/wp-content/plugins/kama-clic-counter; composer update)
 
 #########################################################
 #                       i18n                            #

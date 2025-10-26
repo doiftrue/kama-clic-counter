@@ -178,7 +178,7 @@ if( ! empty( $found_rows ) && $found_rows > $limit ){
 					</div>
 				</td>
 
-				<td><?= $link->clicks_in_month ?><br><?= calc_clicks_per_day( $link ) ?> <small>/<?= __( 'day', 'kama-clic-counter' ) ?></small></td>
+				<td><?= $link->clicks_in_month ?><br><?= Helpers::calc_clicks_per_day( $link ) ?> <small>/<?= __( 'day', 'kama-clic-counter' ) ?></small></td>
 
 				<td><?= $link->clicks_prev_month ?></td>
 

@@ -46,6 +46,8 @@ class Counter {
 	/**
 	 * Gets the link on which clicks will be counted.
 	 *
+	 * @see Counter__Test::test__get_kcc_url()
+	 *
 	 * @param string     $url       String or Placeholder `{url}`
 	 * @param int|string $in_post   1/0 or Placeholder `{in_post}`.
 	 * @param int|string $download  1/0 or Placeholder `{download}`.
@@ -344,12 +346,16 @@ class Counter {
 		return [ $insert_id, $insert_data ];
 	}
 
+	/**
+	 * @see Counter__Test::test__is_url_in_exclude_list()
+	 */
 	private function is_url_in_exclude_list( $url ): bool {
 		if( ! $this->opt->url_exclude_patterns ){
 			return false;
 		}
 
 		$excl_patts = array_map( 'trim', preg_split( '/[,\n]/', $this->opt->url_exclude_patterns ) );
+		$excl_patts = array_filter( $excl_patts );
 
 		foreach( $excl_patts as $patt ){
 			// maybe regular expression
@@ -447,6 +453,8 @@ class Counter {
 	 * Converts the relative path "/blog/dir/file" to an absolute (from the root of the site)
 	 * and cleans the URL. Designed to handle dirty (uncleaned) URLs.
 	 *
+	 * @see Counter__Test::test__parse_kcc_url()
+	 *
 	 * @return array Parsed URL data or empty array if URL is invalid.
 	 */
 	public function parse_kcc_url( string $kcc_url ): array {
@@ -503,6 +511,8 @@ class Counter {
 
 	/**
 	 * Determines if the URL is a file (has an extension) or a webpage.
+	 *
+	 * @see Counter__Test::test__is_file()
 	 */
 	private function is_file( $url ) {
 		/**

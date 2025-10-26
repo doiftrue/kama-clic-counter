@@ -52,7 +52,7 @@ $link = new Link_Item( $link );
 	<div class="editlinkform__row">
 		<input type="number" style="width:10rem;" name="up[clicks_in_month]"
 		       value="<?= esc_attr( $link->clicks_in_month ) ?>"/>
-		<?= sprintf( __( 'Current Month clicks — %s per day', 'kama-clic-counter' ), calc_clicks_per_day( $link ) ?: 0 ) ?>
+		<?= sprintf( __( 'Current Month clicks — %s per day', 'kama-clic-counter' ), Helpers::calc_clicks_per_day( $link ) ?: 0 ) ?>
 	</div>
 	<div class="editlinkform__row">
 		<input type="number" style="width:10rem;" name="up[clicks_prev_month]"

@@ -2,6 +2,7 @@
 
 namespace KamaClickCounter;
 
+use Closure;
 use ReflectionClass;
 
 class Upgrader__Test extends KCCTestCase {
@@ -12,20 +13,18 @@ class Upgrader__Test extends KCCTestCase {
 	public function test__run_methods(): void {
 		$upgrader = ( new ReflectionClass( Upgrader::class ) )->newInstanceWithoutConstructor();
 
-		// get access to private method
-		$result = ( function(){
-			/** @var Upgrader $this */
+		$call = ( function(){
 			$this->db_ver = '4.0.0';
 			$this->curr_ver = '4.7.0';
 			return $this->run_methods( new Upgrader_Methods_Mock() );
-		} )->call( $upgrader );
+		} )->bindTo( $upgrader, Upgrader::class );
 
 		$this->assertSame(
 			[
 				'v4_0_1' => 'v4_0_1 result',
 				'v4_1_0' => 'v4_1_0 result',
 			],
-			$result
+			$call()
 		);
 	}
 

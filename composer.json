@@ -18,6 +18,7 @@
   "autoload": {},
   "require": {},
   "require-dev": {
-    "10up/wp_mock": "*"
+    "10up/wp_mock": "*",
+    "doiftrue/unitest-wp-copy": "*"
   }
 }
