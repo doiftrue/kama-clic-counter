@@ -1,0 +1,432 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-26 07:48+0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: admin/pages/_options.php:14
+msgid ""
+"Downloads template. This code replaces the shortcode <code>[download "
+"url=\"URL\"]</code> in content:"
+msgstr ""
+
+#: admin/pages/_options.php:40
+msgid "hide link URL with link ID. Works only for download block."
+msgstr ""
+
+#: admin/pages/_options.php:45
+msgid "html class of the link of witch clicks we want to consider."
+msgstr ""
+
+#: admin/pages/_options.php:47
+msgid ""
+"Clicks on links with the same code <code>&lt;a class=&quot;count&quot; "
+"href=&quot;#&quot;&gt;link text&lt;/a&gt;</code> will be considered. Leave "
+"the field in order to disable this option - it save little server resourses."
+msgstr ""
+
+#: admin/pages/_options.php:51
+msgid "How to display statistics for the links in content?"
+msgstr ""
+
+#: admin/pages/_options.php:53
+msgid "don't show"
+msgstr ""
+
+#: admin/pages/_options.php:54
+msgid "in the title attribute"
+msgstr ""
+
+#: admin/pages/_options.php:55
+msgid "as text after link"
+msgstr ""
+
+#: admin/pages/_options.php:58
+msgid "Disable this option and save 1 database query for each link!"
+msgstr ""
+
+#: admin/pages/_options.php:62
+msgid "Exclude filter"
+msgstr ""
+
+#: admin/pages/_options.php:65
+msgid ""
+"If URL contain defined here substring, click on it will NOT BE count. "
+"Separate with comma or new line."
+msgstr ""
+
+#: admin/pages/_options.php:67
+msgid ""
+"Substring starting and ending with / becomes regular expression, ex: /"
+"^[0-9]+/."
+msgstr ""
+
+#: admin/pages/_options.php:75
+msgid ""
+"distinguish clicks on the same links, but from different posts. Uncheck in "
+"order to count clicks in different posts in one place."
+msgstr ""
+
+#: admin/pages/_options.php:83
+msgid "enable WordPress widget?"
+msgstr ""
+
+#: admin/pages/_options.php:91
+msgid "show link on stat in Admin Bar"
+msgstr ""
+
+#: admin/pages/_options.php:114
+msgid ""
+"Role names, except 'administrator' which will have access to KCC stat and "
+"links manage."
+msgstr ""
+
+#: admin/pages/_options.php:122 admin/pages/_edit-link.php:120
+msgid "Save changes"
+msgstr ""
+
+#: admin/pages/_options.php:124
+msgid "Reset to defaults"
+msgstr ""
+
+#: admin/pages/_options.php:124
+msgid "Sure to reset settings?"
+msgstr ""
+
+#: admin/pages/_edit-link.php:15
+msgid "Link not found..."
+msgstr ""
+
+#: admin/pages/_edit-link.php:37
+msgid "Go back"
+msgstr ""
+
+#: admin/pages/_edit-link.php:50
+msgid "All clicks"
+msgstr ""
+
+#: admin/pages/_edit-link.php:55
+#, php-format
+msgid "Current Month clicks — %s per day"
+msgstr ""
+
+#: admin/pages/_edit-link.php:60
+msgid "Previous Month clicks"
+msgstr ""
+
+#: admin/pages/_edit-link.php:64
+msgid "Clicks history"
+msgstr ""
+
+#: admin/pages/_edit-link.php:67
+msgid "File size"
+msgstr ""
+
+#: admin/pages/_edit-link.php:70
+msgid "File name"
+msgstr ""
+
+#: admin/pages/_edit-link.php:73
+msgid "File title"
+msgstr ""
+
+#: admin/pages/_edit-link.php:76
+msgid "File description"
+msgstr ""
+
+#: admin/pages/_edit-link.php:88
+msgid "Link to file"
+msgstr ""
+
+#: admin/pages/_edit-link.php:95
+msgid "Date added"
+msgstr ""
+
+#: admin/pages/_edit-link.php:104
+msgid "Post ID"
+msgstr ""
+
+#: admin/pages/_edit-link.php:123
+msgid "Sure to delete it?"
+msgstr ""
+
+#: admin/pages/_edit-link.php:124 admin/pages/_table.php:158
+msgid "Delete"
+msgstr ""
+
+#: admin/pages/_table.php:53
+msgid "Nothing found."
+msgstr ""
+
+#: admin/pages/_table.php:73
+msgid "Clear out the filter:"
+msgstr ""
+
+#: admin/pages/_table.php:75
+msgid "type any part of URL..."
+msgstr ""
+
+#: admin/pages/_table.php:84
+msgid "Here"
+msgstr ""
+
+#: admin/pages/_table.php:84
+msgid "There"
+msgstr ""
+
+#: admin/pages/_table.php:106
+msgid "Sort"
+msgstr ""
+
+#: admin/pages/_table.php:118
+msgid "File"
+msgstr ""
+
+#: admin/pages/_table.php:119
+msgid "Month"
+msgstr ""
+
+#: admin/pages/_table.php:120
+msgid "Prev M"
+msgstr ""
+
+#: admin/pages/_table.php:121
+msgid "All"
+msgstr ""
+
+#: admin/pages/_table.php:122
+msgid "History"
+msgstr ""
+
+#: admin/pages/_table.php:123
+msgid "Size"
+msgstr ""
+
+#: admin/pages/_table.php:125 admin/pages/_table.php:153
+msgid "Post"
+msgstr ""
+
+#: admin/pages/_table.php:127
+msgid "Attach"
+msgstr ""
+
+#: admin/pages/_table.php:128
+msgid "Added"
+msgstr ""
+
+#: admin/pages/_table.php:129
+msgid "Last Click"
+msgstr ""
+
+#: admin/pages/_table.php:148
+msgid "Edit"
+msgstr ""
+
+#: admin/pages/_table.php:168
+msgid "Link"
+msgstr ""
+
+#: admin/pages/_table.php:174
+msgid "Find similar"
+msgstr ""
+
+#: admin/pages/_table.php:175
+msgid "from post"
+msgstr ""
+
+#: admin/pages/_table.php:181
+msgid "day"
+msgstr ""
+
+#: admin/pages/_table.php:207
+msgid "yes"
+msgstr ""
+
+#: admin/pages/_table.php:213
+msgid "DELETE selected links"
+msgstr ""
+
+#: admin/pages/_admin-menu.php:10
+msgid "Link editing"
+msgstr ""
+
+#: admin/pages/_admin-menu.php:17 src/Admin.php:50
+msgid "Settings"
+msgstr ""
+
+#: admin/pages/_admin-menu.php:26
+msgid "List"
+msgstr ""
+
+#: admin/admin-functions.php:10
+msgid "Shortcodes that can be used in template:"
+msgstr ""
+
+#: admin/admin-functions.php:11
+msgid "[icon_url] - URL to file icon"
+msgstr ""
+
+#: admin/admin-functions.php:12
+msgid "[link_url] - URL to download"
+msgstr ""
+
+#: admin/admin-functions.php:13
+msgid "[link_name]"
+msgstr ""
+
+#: admin/admin-functions.php:14
+msgid "[link_title]"
+msgstr ""
+
+#: admin/admin-functions.php:15
+msgid "[link_clicks] - number of clicks"
+msgstr ""
+
+#: admin/admin-functions.php:16
+msgid "[file_size]"
+msgstr ""
+
+#: admin/admin-functions.php:17
+msgid "[link_date:d.M.Y] - date in \"d.M.Y\"  format"
+msgstr ""
+
+#: admin/admin-functions.php:18
+msgid "[link_description]"
+msgstr ""
+
+#: admin/admin-functions.php:19
+msgid "[edit_link] - URL to edit link in admin"
+msgstr ""
+
+#: src/TinyMCE.php:37
+msgid "Click Counter Shortcode"
+msgstr ""
+
+#: src/TinyMCE.php:38
+msgid "Select file"
+msgstr ""
+
+#: src/TinyMCE.php:39
+msgid "Find file for download shortcode"
+msgstr ""
+
+#: src/TinyMCE.php:40
+msgid "Select from media"
+msgstr ""
+
+#: src/TinyMCE.php:41
+msgid "Click counter shortcode insertion"
+msgstr ""
+
+#: src/TinyMCE.php:42
+msgid "Insert shortcode"
+msgstr ""
+
+#: src/TinyMCE.php:43
+msgid "Link title (not required)"
+msgstr ""
+
+#: src/TinyMCE.php:44
+msgid "Download file URL"
+msgstr ""
+
+#: src/Widget.php:12
+msgid "KCC: Top Downloads"
+msgstr ""
+
+#: src/Widget.php:13
+msgid "Kama Click Counter Widget"
+msgstr ""
+
+#: src/Widget.php:142
+msgid "Top Downloads"
+msgstr ""
+
+#: src/Widget.php:152
+msgid "Title:"
+msgstr ""
+
+#: src/Widget.php:162
+msgid "how many links to show?"
+msgstr ""
+
+#: src/Widget.php:168
+msgid "all clicks"
+msgstr ""
+
+#: src/Widget.php:169
+msgid "clicks per day"
+msgstr ""
+
+#: src/Widget.php:170
+msgid "how to sort the result?"
+msgstr ""
+
+#: src/Widget.php:178
+msgid "show links older then this data (ex. 2014-08-09)"
+msgstr ""
+
+#: src/Widget.php:184
+msgid "display only downloads, but not all links?"
+msgstr ""
+
+#: src/Widget.php:189
+msgid "Use URL to post with the link, and not URL of the link "
+msgstr ""
+
+#: src/Widget.php:194
+msgid "Out template:"
+msgstr ""
+
+#: src/Widget.php:200
+msgid "Template CSS:"
+msgstr ""
+
+#: src/Content_Replacer.php:61 src/Content_Replacer.php:64
+msgid "clicks:"
+msgstr ""
+
+#: src/Admin.php:51
+msgid "Statistics"
+msgstr ""
+
+#: src/Admin_Page.php:53
+msgid "Settings reseted to defaults"
+msgstr ""
+
+#: src/Admin_Page.php:66
+msgid "Selected objects deleted"
+msgstr ""
+
+#: src/Admin_Page.php:67 src/Admin_Page.php:80
+msgid "Nothing was deleted!"
+msgstr ""
+
+#: src/Admin_Page.php:93
+msgid "Settings updated."
+msgstr ""
+
+#: src/Admin_Page.php:94
+msgid "Error: Failed to update the settings!"
+msgstr ""
+
+#: src/Admin_Page.php:123
+msgid "Link updated!"
+msgstr ""
+
+#: src/Admin_Page.php:124
+msgid "Failed to update link!"
+msgstr ""

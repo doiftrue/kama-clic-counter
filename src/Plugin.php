@@ -55,7 +55,7 @@ class Plugin {
 			return;
 		}
 
-		load_plugin_textdomain( 'kama-clic-counter', false, basename( $this->dir ) . '/languages' );
+		load_plugin_textdomain( 'kama-clic-counter', false, basename( $this->dir ) . '/languages/build' );
 
 		$this->set_manage_access();
 		$this->set_admin_access();

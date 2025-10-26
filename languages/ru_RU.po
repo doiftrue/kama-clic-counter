@@ -1,0 +1,419 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-10-26T08:11:08+05:00\n"
+"PO-Revision-Date: 2025-10-26T08:11:08+05:00\n"
+"Language: \n"
+
+#: admin/pages/_options.php:14
+msgid "Downloads template. This code replaces the shortcode <code>[download url=\"URL\"]</code> in content:"
+msgstr "Шаблон загрузки. Этот код заменяет шорткод <code>[download url=\"URL\"]</code> в контенте:"
+
+#: admin/pages/_options.php:40
+msgid "hide link URL with link ID. Works only for download block."
+msgstr "скрывать URL ссылки по ID ссылки. Работает только для блока загрузки."
+
+#: admin/pages/_options.php:45
+msgid "html class of the link of witch clicks we want to consider."
+msgstr "HTML-класс ссылки, клики по которой нужно учитывать."
+
+#: admin/pages/_options.php:47
+msgid "Clicks on links with the same code <code>&lt;a class=&quot;count&quot; href=&quot;#&quot;&gt;link text&lt;/a&gt;</code> will be considered. Leave the field in order to disable this option - it save little server resourses."
+msgstr "Будут учитываться клики по ссылкам с таким кодом <code>&lt;a class=&quot;count&quot; href=&quot;#&quot;&gt;link text&lt;/a&gt;</code>. Оставьте поле пустым, чтобы отключить опцию - это немного экономит ресурсы сервера."
+
+#: admin/pages/_options.php:51
+msgid "How to display statistics for the links in content?"
+msgstr "Как отображать статистику для ссылок в контенте?"
+
+#: admin/pages/_options.php:53
+msgid "don't show"
+msgstr "не показывать"
+
+#: admin/pages/_options.php:54
+msgid "in the title attribute"
+msgstr "в атрибуте title"
+
+#: admin/pages/_options.php:55
+msgid "as text after link"
+msgstr "текстом после ссылки"
+
+#: admin/pages/_options.php:58
+msgid "Disable this option and save 1 database query for each link!"
+msgstr "Отключите опцию и сэкономьте 1 запрос к БД на каждую ссылку!"
+
+#: admin/pages/_options.php:62
+msgid "Exclude filter"
+msgstr "Фильтр исключений"
+
+#: admin/pages/_options.php:65
+msgid "If URL contain defined here substring, click on it will NOT BE count. Separate with comma or new line."
+msgstr "Если URL содержит указанную здесь подстроку, клик по нему НЕ будет засчитан. Разделяйте запятыми или с новой строки."
+
+#: admin/pages/_options.php:67
+msgid "Substring starting and ending with / becomes regular expression, ex: /^[0-9]+/."
+msgstr "Подстрока, начинающаяся и заканчивающаяся на /, становится регулярным выражением, напр.: /^[0-9]+/."
+
+#: admin/pages/_options.php:75
+msgid "distinguish clicks on the same links, but from different posts. Uncheck in order to count clicks in different posts in one place."
+msgstr "разделять клики по одинаковым ссылкам из разных записей. Снимите флажок, чтобы считать клики из разных записей вместе."
+
+#: admin/pages/_options.php:83
+msgid "enable WordPress widget?"
+msgstr "включить виджет WordPress?"
+
+#: admin/pages/_options.php:91
+msgid "show link on stat in Admin Bar"
+msgstr "показать ссылку на статистику в Admin Bar"
+
+#: admin/pages/_options.php:114
+msgid "Role names, except 'administrator' which will have access to KCC stat and links manage."
+msgstr "Роли, кроме 'administrator', которые получат доступ к статистике KCC и управлению ссылками."
+
+#: admin/pages/_options.php:122
+#: admin/pages/_edit-link.php:120
+msgid "Save changes"
+msgstr "Сохранить изменения"
+
+#: admin/pages/_options.php:124
+msgid "Reset to defaults"
+msgstr "Сбросить по умолчанию"
+
+#: admin/pages/_options.php:124
+msgid "Sure to reset settings?"
+msgstr "Сбросить настройки?"
+
+#: admin/pages/_edit-link.php:15
+msgid "Link not found..."
+msgstr "Ссылка не найдена..."
+
+#: admin/pages/_edit-link.php:37
+msgid "Go back"
+msgstr "Назад"
+
+#: admin/pages/_edit-link.php:50
+msgid "All clicks"
+msgstr "Все клики"
+
+#: admin/pages/_edit-link.php:55
+#, php-format
+msgid "Current Month clicks — %s per day"
+msgstr "Клики за текущий месяц - %s в день"
+
+#: admin/pages/_edit-link.php:60
+msgid "Previous Month clicks"
+msgstr "Клики за прошлый месяц"
+
+#: admin/pages/_edit-link.php:64
+msgid "Clicks history"
+msgstr "История кликов"
+
+#: admin/pages/_edit-link.php:67
+msgid "File size"
+msgstr "Размер файла"
+
+#: admin/pages/_edit-link.php:70
+msgid "File name"
+msgstr "Имя файла"
+
+#: admin/pages/_edit-link.php:73
+msgid "File title"
+msgstr "Заголовок файла"
+
+#: admin/pages/_edit-link.php:76
+msgid "File description"
+msgstr "Описание файла"
+
+#: admin/pages/_edit-link.php:88
+msgid "Link to file"
+msgstr "Ссылка на файл"
+
+#: admin/pages/_edit-link.php:95
+msgid "Date added"
+msgstr "Дата добавления"
+
+#: admin/pages/_edit-link.php:104
+msgid "Post ID"
+msgstr "ID записи"
+
+#: admin/pages/_edit-link.php:123
+msgid "Sure to delete it?"
+msgstr "Точно удалить?"
+
+#: admin/pages/_edit-link.php:124
+#: admin/pages/_table.php:158
+msgid "Delete"
+msgstr "Удалить"
+
+#: admin/pages/_table.php:53
+msgid "Nothing found."
+msgstr "Ничего не найдено."
+
+#: admin/pages/_table.php:73
+msgid "Clear out the filter:"
+msgstr "Сбросить фильтр:"
+
+#: admin/pages/_table.php:75
+msgid "type any part of URL..."
+msgstr "введите любую часть URL..."
+
+#: admin/pages/_table.php:84
+msgid "Here"
+msgstr "Сюда"
+
+#: admin/pages/_table.php:84
+msgid "There"
+msgstr "Туда"
+
+#: admin/pages/_table.php:106
+msgid "Sort"
+msgstr "Сортировать"
+
+#: admin/pages/_table.php:118
+msgid "File"
+msgstr "Файл"
+
+#: admin/pages/_table.php:119
+msgid "Month"
+msgstr "Месяц"
+
+#: admin/pages/_table.php:120
+msgid "Prev M"
+msgstr "Прошл. мес."
+
+#: admin/pages/_table.php:121
+msgid "All"
+msgstr "Всего"
+
+#: admin/pages/_table.php:122
+msgid "History"
+msgstr "История"
+
+#: admin/pages/_table.php:123
+msgid "Size"
+msgstr "Размер"
+
+#: admin/pages/_table.php:125
+#: admin/pages/_table.php:153
+msgid "Post"
+msgstr "Запись"
+
+#: admin/pages/_table.php:127
+msgid "Attach"
+msgstr "Вложение"
+
+#: admin/pages/_table.php:128
+msgid "Added"
+msgstr "Добавлено"
+
+#: admin/pages/_table.php:129
+msgid "Last Click"
+msgstr "Последний клик"
+
+#: admin/pages/_table.php:148
+msgid "Edit"
+msgstr "Изменить"
+
+#: admin/pages/_table.php:168
+msgid "Link"
+msgstr "Ссылка"
+
+#: admin/pages/_table.php:174
+msgid "Find similar"
+msgstr "Найти похожие"
+
+#: admin/pages/_table.php:175
+msgid "from post"
+msgstr "из записи"
+
+#: admin/pages/_table.php:181
+msgid "day"
+msgstr "день"
+
+#: admin/pages/_table.php:207
+msgid "yes"
+msgstr "да"
+
+#: admin/pages/_table.php:213
+msgid "DELETE selected links"
+msgstr "УДАЛИТЬ выбранные ссылки"
+
+#: admin/pages/_admin-menu.php:10
+msgid "Link editing"
+msgstr "Редактирование ссылки"
+
+#: admin/pages/_admin-menu.php:17
+#: src/Admin.php:50
+msgid "Settings"
+msgstr "Настройки"
+
+#: admin/pages/_admin-menu.php:26
+msgid "List"
+msgstr "Список"
+
+#: admin/admin-functions.php:10
+msgid "Shortcodes that can be used in template:"
+msgstr "Шорткоды, доступные в шаблоне:"
+
+#: admin/admin-functions.php:11
+msgid "[icon_url] - URL to file icon"
+msgstr "[icon_url] - URL иконки файла"
+
+#: admin/admin-functions.php:12
+msgid "[link_url] - URL to download"
+msgstr "[link_url] - URL для загрузки"
+
+#: admin/admin-functions.php:13
+msgid "[link_name]"
+msgstr "[link_name]"
+
+#: admin/admin-functions.php:14
+msgid "[link_title]"
+msgstr "[link_title]"
+
+#: admin/admin-functions.php:15
+msgid "[link_clicks] - number of clicks"
+msgstr "[link_clicks] - количество кликов"
+
+#: admin/admin-functions.php:16
+msgid "[file_size]"
+msgstr "[file_size]"
+
+#: admin/admin-functions.php:17
+msgid "[link_date:d.M.Y] - date in \"d.M.Y\"  format"
+msgstr "[link_date:d.M.Y] - дата в формате \"d.M.Y\""
+
+#: admin/admin-functions.php:18
+msgid "[link_description]"
+msgstr "[link_description]"
+
+#: admin/admin-functions.php:19
+msgid "[edit_link] - URL to edit link in admin"
+msgstr "[edit_link] - URL редактирования ссылки в админке"
+
+#: src/TinyMCE.php:37
+msgid "Click Counter Shortcode"
+msgstr "Шорткод счетчика кликов"
+
+#: src/TinyMCE.php:38
+msgid "Select file"
+msgstr "Выбрать файл"
+
+#: src/TinyMCE.php:39
+msgid "Find file for download shortcode"
+msgstr "Найти файл для шорткода загрузки"
+
+#: src/TinyMCE.php:40
+msgid "Select from media"
+msgstr "Выбрать из медиафайлов"
+
+#: src/TinyMCE.php:41
+msgid "Click counter shortcode insertion"
+msgstr "Вставка шорткода счетчика кликов"
+
+#: src/TinyMCE.php:42
+msgid "Insert shortcode"
+msgstr "Вставить шорткод"
+
+#: src/TinyMCE.php:43
+msgid "Link title (not required)"
+msgstr "Заголовок ссылки (необязательно)"
+
+#: src/TinyMCE.php:44
+msgid "Download file URL"
+msgstr "URL файла для загрузки"
+
+#: src/Widget.php:12
+msgid "KCC: Top Downloads"
+msgstr "KCC: Топ загрузок"
+
+#: src/Widget.php:13
+msgid "Kama Click Counter Widget"
+msgstr "Виджет Kama Click Counter"
+
+#: src/Widget.php:142
+msgid "Top Downloads"
+msgstr "Топ загрузок"
+
+#: src/Widget.php:152
+msgid "Title:"
+msgstr "Заголовок:"
+
+#: src/Widget.php:162
+msgid "how many links to show?"
+msgstr "сколько ссылок показывать?"
+
+#: src/Widget.php:168
+msgid "all clicks"
+msgstr "все клики"
+
+#: src/Widget.php:169
+msgid "clicks per day"
+msgstr "клики в день"
+
+#: src/Widget.php:170
+msgid "how to sort the result?"
+msgstr "как сортировать результат?"
+
+#: src/Widget.php:178
+msgid "show links older then this data (ex. 2014-08-09)"
+msgstr "показывать ссылки старше этой даты (напр. 2014-08-09)"
+
+#: src/Widget.php:184
+msgid "display only downloads, but not all links?"
+msgstr "показывать только загрузки, а не все ссылки?"
+
+#: src/Widget.php:189
+msgid "Use URL to post with the link, and not URL of the link "
+msgstr "использовать URL записи с ссылкой, а не URL самой ссылки"
+
+#: src/Widget.php:194
+msgid "Out template:"
+msgstr "Шаблон вывода:"
+
+#: src/Widget.php:200
+msgid "Template CSS:"
+msgstr "CSS шаблона:"
+
+#: src/Content_Replacer.php:61
+#: src/Content_Replacer.php:64
+msgid "clicks:"
+msgstr "кликов:"
+
+#: src/Admin.php:51
+msgid "Statistics"
+msgstr "Статистика"
+
+#: src/Admin_Page.php:53
+msgid "Settings reseted to defaults"
+msgstr "Настройки сброшены к значениям по умолчанию"
+
+#: src/Admin_Page.php:66
+msgid "Selected objects deleted"
+msgstr "Выбранные объекты удалены"
+
+#: src/Admin_Page.php:67
+#: src/Admin_Page.php:80
+msgid "Nothing was deleted!"
+msgstr "Ничего не удалено!"
+
+#: src/Admin_Page.php:93
+msgid "Settings updated."
+msgstr "Настройки обновлены."
+
+#: src/Admin_Page.php:94
+msgid "Error: Failed to update the settings!"
+msgstr "Ошибка: не удалось обновить настройки!"
+
+#: src/Admin_Page.php:123
+msgid "Link updated!"
+msgstr "Ссылка обновлена!"
+
+#: src/Admin_Page.php:124
+msgid "Failed to update link!"
+msgstr "Не удалось обновить ссылку!"
