@@ -44,6 +44,20 @@ You can customize CSS styles on the plugin options page. Alternatively, you can 
 
 == Changelog ==
 
+= 4.1.0 =
+- NEW: clicks_in_month, clicks_prev_month DB fields added. Now the plugin tracks clicks per month.
+- NEW: Unit tests infrastructure added and some code covered with unit tests.
+- FIX: Possible XSS protection: escapes and sanitizations added for widget as well.
+- CHG: Referer check logic removed because of incorrect working.
+- IMP: modify_links in content minor performance improvements.
+- IMP: Download Template separeted from HTML and now added in HEAD.
+- IMP: Link_Item Object added.
+- IMP: idna_convert.php phpstan fixes.
+- IMP: Some jQuery deps removed. NPM packages updated.
+- IMP: Other improvements & bugfixes.
+- IMP: Upgrader logic improved.
+- IMP: Multisite support for Uninstall.
+
 = 4.0.4 =
 - IMP: To make it harder to add any links to the DB via a simple GET request, added additional check that the referer matches the current site. Thanks to Carmine Cappetti.
 - IMP: Minor improvements.
