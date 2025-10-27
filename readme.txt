@@ -44,6 +44,9 @@ You can customize CSS styles on the plugin options page. Alternatively, you can 
 
 == Changelog ==
 
+= 4.1.1 =
+- FIX: Minor bugfix on options update.
+
 = 4.1.0 =
 - NEW: clicks_in_month, clicks_prev_month DB fields added. Now the plugin tracks clicks per month.
 - NEW: Unit tests infrastructure added and some code covered with unit tests.

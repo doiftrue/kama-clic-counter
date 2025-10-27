@@ -134,6 +134,7 @@ class Options {
 		return (bool) $up;
 	}
 
+	// TODO: write tests - check different types to not fatal
 	private function sanitize( array $options ): array {
 		foreach( $options as $key => & $val ){
 			is_string( $val ) && $val = trim( $val );
@@ -148,7 +149,7 @@ class Options {
 				// no sanitize... wp_kses($val, 'post');
 			}
 			elseif( $key === 'access_roles' ){
-				$val = array_map( 'sanitize_key', $val );
+				$val = array_map( 'sanitize_key', (array) $val );
 				$not_allowed_roles =  [ 'contributor', 'subscriber' ];
 				$val = array_filter( $val, static fn( $role ) => ! in_array( $role, $not_allowed_roles, true ) );
 			}
